@@ -273,6 +273,9 @@
             </div>
         </div>
         
+        <footer class="text-center text-gray-500 text-xs py-3">
+            <p>英语固定搭配归类游戏 | 基于PPT期末复习资料（介词搭配专项）</p>
+        </footer>
     </div>
     <script>
         // 固定搭配数据（包含动词、可搭配的介词及正确翻译）
@@ -414,32 +417,33 @@
             allPrepositions: [], // 所有需要匹配的介词
             correctMatches: {}, // 正确的匹配关系：{动词ID: [介词1, 介词2...]}
             prepositionTranslations: {}, // 存储介词和动词组合的正确翻译
+            usedMatches: {}, // 已使用的匹配：{动词ID: [已匹配的介词1, 介词2...]}
             gameStartTime: null, // 游戏开始时间戳
             isReset: false // 标记游戏是否已重置
         };
 
         // 翻译同义词库（基于百度翻译常见译法扩展）
         const translationSynonyms = {
-            '看': ['看', '观看', '查看', '瞧瞧', '注视'],
-            '寻找': ['寻找', '找寻', '查找', '搜寻', '寻觅'],
-            '对...微笑': ['对...微笑', '朝...笑', '向...微笑', '对着...笑'],
-            '对...大喊': ['对...大喊', '向...大叫', '对着...呼喊', '朝...喊叫'],
-            '相信': ['相信', '信任', '信赖', '确信', '信服'],
-            '依靠': ['依靠', '依赖', '依仗', '凭借', '依托'],
-            '照顾': ['照顾', '照料', '照看', '照管', '护理'],
-            '遭受': ['遭受', '蒙受', '遭遇', '承受', '受到'],
-            '等待': ['等待', '等候', '守候', '期待', '盼着'],
-            '同意某人': ['同意某人', '赞成某人', '赞同某人', '认可某人'],
-            '同意某事': ['同意某事', '赞成某事', '应允某事', '答应某事'],
-            '坚持': ['坚持', '执意', '坚守', '执意', '保持'],
-            '为...道歉': ['为...道歉', '向...致歉', '为...赔罪', '为...说对不起'],
-            '瞥一眼': ['瞥一眼', '瞥视', '扫一眼', '瞟一眼', '匆匆一看'],
-            '盯着看': ['盯着看', '凝视', '注视', '目不转睛地看', '紧盯'],
-            '到达小地方': ['到达小地方', '抵达小地点', '到小地方', '抵达小处'],
-            '到达大地方': ['到达大地方', '抵达大城市', '到大城市', '抵达大地方'],
-            '坚持做某事': ['坚持做某事', '执意做某事', '持续做某事', '一直做某事'],
-            '评论': ['评论', '评述', '议论', '评价', '谈论'],
-            '源自': ['源自', '来源于', '来自', '源于', '出自']
+            '看': ['看', '观看', '查看', '瞧瞧', '注视', '阅览', '浏览', '瞅一眼'],
+            '寻找': ['寻找', '找寻', '查找', '搜寻', '寻觅', '探求', '搜寻', '物色'],
+            '对...微笑': ['对...微笑', '朝...笑', '向...微笑', '对着...笑', '给...笑容'],
+            '对...大喊': ['对...大喊', '向...大叫', '对着...呼喊', '朝...喊叫', '对...叫嚷'],
+            '相信': ['相信', '信任', '信赖', '确信', '信服', '坚信', '认可', '认同'],
+            '依靠': ['依靠', '依赖', '依仗', '凭借', '依托', '仰仗', '借助', '指望'],
+            '照顾': ['照顾', '照料', '照看', '照管', '护理', '关照', '看护', '抚育'],
+            '遭受': ['遭受', '蒙受', '遭遇', '承受', '受到', '历经', '经受', '遭遇'],
+            '等待': ['等待', '等候', '守候', '期待', '盼着', '恭候', '伫候', '待命'],
+            '同意某人': ['同意某人', '赞成某人', '赞同某人', '认可某人', '同意对方', '认同某人'],
+            '同意某事': ['同意某事', '赞成某事', '应允某事', '答应某事', '认可某事', '接受某事'],
+            '坚持': ['坚持', '执意', '坚守', '执意', '保持', '固守', '执着', '维持'],
+            '为...道歉': ['为...道歉', '向...致歉', '为...赔罪', '为...说对不起', '为...表示歉意'],
+            '瞥一眼': ['瞥一眼', '瞥视', '扫一眼', '瞟一眼', '匆匆一看', '扫视一下', '瞥了一眼'],
+            '盯着看': ['盯着看', '凝视', '注视', '目不转睛地看', '紧盯', '凝望', '注目', '眈眈'],
+            '到达小地方': ['到达小地方', '抵达小地点', '到小地方', '抵达小处', '到达具体地点'],
+            '到达大地方': ['到达大地方', '抵达大城市', '到大城市', '抵达大地方', '到达城市'],
+            '坚持做某事': ['坚持做某事', '执意做某事', '持续做某事', '一直做某事', '坚持干某事'],
+            '评论': ['评论', '评述', '议论', '评价', '谈论', '点评', '批评', '议论'],
+            '源自': ['源自', '来源于', '来自', '源于', '出自', '起源于', '发源于', '根源于']
         };
 
         // DOM 元素
@@ -614,6 +618,7 @@
             gameState.matchedPairs = 0;
             gameState.attempts = 0;
             gameState.correctMatches = {};
+            gameState.usedMatches = {}; // 新增：重置已使用的匹配
             gameState.allPrepositions = [];
             gameState.selectedPreposition = null;
             gameState.prepositionTranslations = {};
@@ -669,6 +674,7 @@
                 // 记录正确的匹配关系（存储介词）
                 const correctPreps = item.correctPrepositions.map(p => p.prep);
                 gameState.correctMatches[verbId] = correctPreps;
+                gameState.usedMatches[verbId] = []; // 初始化已使用的匹配
                 gameState.totalPairs += correctPreps.length;
                 
                 // 存储翻译信息
@@ -715,12 +721,22 @@
                 return;
             }
             
+            // 获取当前动词和介词
+            const prepositionValue = prepositionItem.dataset.preposition;
+            
+            // 检查该动词是否已经匹配过这个介词
+            if (gameState.usedMatches[verbId].includes(prepositionValue)) {
+                // 显示提示信息
+                showTemporaryMessage(this, "该动词已匹配过这个介词");
+                // 取消选择状态
+                gameState.selectedPreposition.classList.remove('selected');
+                gameState.selectedPreposition = null;
+                return;
+            }
+            
             // 增加尝试次数
             gameState.attempts++;
             attemptsDisplay.textContent = gameState.attempts;
-            
-            // 获取当前动词和介词
-            const prepositionValue = prepositionItem.dataset.preposition;
             
             // 检查是否匹配正确
             const isCorrect = gameState.correctMatches[verbId]?.includes(prepositionValue) || false;
@@ -740,6 +756,9 @@
                 
                 // 隐藏原始元素
                 prepositionItem.style.display = 'none';
+                
+                // 记录已使用的匹配
+                gameState.usedMatches[verbId].push(prepositionValue);
                 
                 // 取消选择状态
                 gameState.selectedPreposition = null;
@@ -771,6 +790,40 @@
             
             // 将克隆的元素添加到动词中
             this.appendChild(clonedItem);
+        }
+
+        // 显示临时提示信息
+        function showTemporaryMessage(element, message) {
+            // 创建提示元素
+            const messageElement = document.createElement('div');
+            messageElement.className = 'absolute bg-red-500 text-white text-xs px-2 py-1 rounded shadow-md z-10';
+            messageElement.textContent = message;
+            
+            // 获取元素位置并定位提示
+            const rect = element.getBoundingClientRect();
+            const bodyRect = document.body.getBoundingClientRect();
+            const left = rect.left - bodyRect.left + rect.width / 2 - 30;
+            const top = rect.top - bodyRect.top - 30;
+            
+            messageElement.style.left = `${left}px`;
+            messageElement.style.top = `${top}px`;
+            
+            // 添加到页面
+            document.body.appendChild(messageElement);
+            
+            // 3秒后移除
+            setTimeout(() => {
+                // 添加淡出动画
+                messageElement.style.transition = 'opacity 0.3s ease';
+                messageElement.style.opacity = '0';
+                
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    if (messageElement.parentNode) {
+                        messageElement.parentNode.removeChild(messageElement);
+                    }
+                }, 300);
+            }, 2000);
         }
 
         // 创建介词选项 - 确保同一个介词对应不同动词时显示对应数量的介词
