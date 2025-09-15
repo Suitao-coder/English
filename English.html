@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>英语固定搭配归类游戏</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色（主色调：淡橙红色） -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff6b6b',      // 主色调-淡橙红色（动词）
+                        secondary: '#4ecdc4',    // 辅助色-青绿色（介词）
+                        warning: '#ef4444',      // 警告色-红色（倒计时警告）
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .category-box {
+                min-height: 120px;
+                transition: all 0.3s ease;
+            }
+            .selected {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 2px #ff6b6b;
+            }
+            .matched {
+                animation: pulse 0.5s;
+            }
+            .timer-warning {
+                animation: warning 1s infinite alternate;
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+            }
+            @keyframes warning {
+                from { color: #ef4444; }
+                to { color: #dc2626; }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen font-sans">
+    <!-- 限制最大宽度以适应手机设备，居中显示 -->
+    <div class="container mx-auto px-3 sm:px-4 py-5 max-w-4xl">
+        <!-- 游戏标题和信息 -->
+        <header class="text-center mb-5">
+            <h1 class="text-[clamp(1.3rem,4vw,2rem)] font-bold text-gray-800 mb-2 tracking-tight">
+                英语<span class="text-primary">固定搭配</span>归类游戏
+            </h1>
+            <p class="text-gray-600 text-sm sm:text-base mb-4 max-w-2xl mx-auto">
+                点击下方的介词，然后点击上方对应的动词框，完成固定搭配匹配挑战
+            </p>
+            
+            <!-- 游戏设置区域 -->
+            <div class="mb-5 bg-white rounded-lg shadow-md p-3 max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                <!-- 动词数量选择器 -->
+                <div>
+                    <label for="prepositionCount" class="block text-gray-700 text-sm font-medium mb-1.5">动词数量:</label>
+                    <div class="flex items-center">
+                        <select id="prepositionCount" class="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                            <option value="3">3个动词</option>
+                            <option value="4">4个动词</option>
+                            <option value="5" selected>5个动词</option>
+                            <option value="6">6个动词</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- 难度选择器 -->
+                <div>
+                    <label for="difficulty" class="block text-gray-700 text-sm font-medium mb-1.5">选择难度:</label>
+                    <div class="flex items-center">
+                        <select id="difficulty" class="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                            <option value="easy">简单（基础搭配）</option>
+                            <option value="medium" selected>中等（核心搭配）</option>
+                            <option value="hard">困难（易混搭配）</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- 计时方式选择器 -->
+                <div>
+                    <label for="timingMode" class="block text-gray-700 text-sm font-medium mb-1.5">选择计时方式:</label>
+                    <div class="flex items-center">
+                        <select id="timingMode" class="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                            <option value="timed">计时模式</option>
+                            <option value="countdown">倒计时模式</option>
+                            <option value="untimed">无计时模式</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 倒计时时长设置 -->
+            <div id="countdownSettings" class="mb-5 bg-white rounded-lg shadow-md p-3 max-w-xs mx-auto">
+                <label for="countdownDuration" class="block text-gray-700 text-sm font-medium mb-1.5">倒计时时长(秒):</label>
+                <div class="flex items-center">
+                    <input type="number" id="countdownDuration" min="30" max="300" value="150" 
+                           class="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-2 sm:gap-3 mb-5">
+                <div id="timerContainer" class="bg-white rounded-lg shadow-md px-3 py-2 flex items-center text-sm">
+                    <i class="fa fa-clock-o text-primary mr-1.5"></i>
+                    <span class="text-gray-700" id="timerLabel">时间: </span>
+                    <span id="timer" class="font-semibold ml-1.5">00:00</span>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md px-3 py-2 flex items-center text-sm">
+                    <i class="fa fa-hand-pointer-o text-primary mr-1.5"></i>
+                    <span class="text-gray-700">尝试次数: </span>
+                    <span id="attempts" class="font-semibold ml-1.5">0</span>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md px-3 py-2 flex items-center text-sm">
+                    <i class="fa fa-check-circle text-primary mr-1.5"></i>
+                    <span class="text-gray-700">匹配: </span>
+                    <span id="matches" class="font-semibold ml-1.5">0/0</span>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-3">
+                <button id="startBtn" class="bg-primary hover:bg-primary/90 text-white text-sm font-bold py-2 px-5 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 focus:outline-none">
+                    开始游戏
+                </button>
+                <button id="resetBtn" class="bg-gray-500 hover:bg-gray-600 text-white text-sm font-bold py-2 px-5 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 focus:outline-none opacity-70 cursor-not-allowed" disabled>
+                    重置游戏
+                </button>
+                <button id="historyBtn" class="bg-gray-700 hover:bg-gray-800 text-white text-sm font-bold py-2 px-5 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 focus:outline-none">
+                    查看历史
+                </button>
+            </div>
+        </header>
+        
+        <!-- 游戏区域 - 上方是动词，下方是介词 -->
+        <div class="flex flex-col gap-6 mb-6">
+            <!-- 上方：动词区域 -->
+            <div id="verbsContainer" class="opacity-50 pointer-events-none transition-opacity duration-500">
+                <h2 class="text-sm sm:text-base font-semibold text-primary mb-3 text-center">动词（点击放置介词）</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    <!-- 动词将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <!-- 下方：介词区域 -->
+            <div id="prepositionsContainer" class="opacity-50 pointer-events-none transition-opacity duration-500">
+                <h2 class="text-sm sm:text-base font-semibold text-secondary mb-3 text-center">介词（点击选择）</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    <!-- 介词将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 中文翻译输入弹窗 -->
+        <div id="translationInputModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-2xl p-5 max-w-md w-full mx-3 transform transition-all duration-300 scale-95 opacity-0" id="translationInputContent">
+                <div class="text-center mb-3">
+                    <h3 class="text-lg font-bold text-gray-800 mb-1.5">输入中文翻译</h3>
+                    <p class="text-gray-600 text-sm mb-3" id="phraseToTranslate">请输入翻译</p>
+                    <div class="my-4">
+                        <input type="text" id="translationInput" placeholder="请输入中文翻译..."
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                    </div>
+                    <p id="translationFeedback" class="text-sm mt-2 hidden"></p>
+                </div>
+                
+                <button id="saveTranslationBtn" class="w-full bg-primary hover:bg-primary/90 text-white text-sm font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 focus:outline-none">
+                    提交翻译
+                </button>
+            </div>
+        </div>
+        
+        <!-- 游戏结束弹窗 -->
+        <div id="gameOverModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-2xl p-5 sm:p-6 max-w-md w-full mx-3 transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+                <div class="text-center mb-3">
+                    <div id="gameOverIcon" class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-3">
+                        <i class="fa fa-trophy text-2xl text-yellow-500"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-1.5" id="gameOverTitle">恭喜你！</h2>
+                    <p class="text-gray-600 text-sm" id="completionText">你已完成所有固定搭配的匹配</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <div id="finalTimeContainer" class="flex justify-between mb-2 pb-2 border-b border-gray-100">
+                        <span class="text-gray-600 text-sm">用时/剩余时间:</span>
+                        <span id="finalTime" class="font-semibold text-gray-800 text-sm">00:00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 text-sm">尝试次数:</span>
+                        <span id="finalAttempts" class="font-semibold text-gray-800 text-sm">0</span>
+                    </div>
+                    <div class="flex justify-between mt-2 pt-2 border-t border-gray-100">
+                        <span class="text-gray-600 text-sm">动词数量:</span>
+                        <span id="finalVerbCount" class="font-semibold text-gray-800 text-sm">0</span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                    <button id="closeResultBtn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-300 focus:outline-none">
+                        返回主页
+                    </button>
+                    <button id="playAgainBtn" class="w-full bg-primary hover:bg-primary/90 text-white text-sm font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 focus:outline-none">
+                        再玩一次
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 再玩一次确认弹窗 -->
+        <div id="playAgainConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-2xl p-5 max-w-md w-full mx-3 transform transition-all duration-300 scale-95 opacity-0" id="playAgainModalContent">
+                <div class="text-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800 mb-2">准备开始新游戏</h2>
+                    <p class="text-gray-600 text-sm">请确认你的游戏设置，然后点击开始</p>
+                </div>
+                
+                <button id="confirmStartBtn" class="w-full bg-primary hover:bg-primary/90 text-white text-sm font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 focus:outline-none">
+                    开始游戏
+                </button>
+            </div>
+        </div>
+        
+        <!-- 历史记录弹窗 -->
+        <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-2xl p-5 max-w-2xl w-full mx-3 max-h-[70vh] overflow-hidden flex flex-col" id="historyModalContent">
+                <div class="text-center mb-3">
+                    <h2 class="text-lg font-bold text-gray-800 mb-1.5">游戏历史记录</h2>
+                    <p class="text-gray-600 text-sm">所有固定搭配匹配结果记录（成功/失败）</p>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto mb-4 text-sm">
+                    <div id="historyList" class="space-y-3">
+                        <!-- 历史记录将通过JavaScript动态生成 -->
+                        <div class="text-center text-gray-500 py-6 text-sm" id="emptyHistory">
+                            暂无历史记录
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button id="clearHistoryBtn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-bold py-2 px-3 rounded-lg shadow-md transition-all duration-300 focus:outline-none">
+                        清空记录
+                    </button>
+                    <button id="closeHistoryBtn" class="flex-1 bg-primary hover:bg-primary/90 text-white text-sm font-bold py-2 px-3 rounded-lg shadow-md transition-all duration-300 focus:outline-none">
+                        关闭
+                    </button>
+                    <button id="exportHistoryBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-3 rounded-lg shadow-md transition-all duration-300 focus:outline-none">
+                        <i class="fa fa-download mr-1"></i> 导出记录
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <script>
+        // 固定搭配数据（包含动词、可搭配的介词及正确翻译）
+        const collocationData = {
+            easy: [
+                { 
+                    verb: 'look', 
+                    correctPrepositions: [
+                        {prep: 'at', translation: '看'},
+                        {prep: 'for', translation: '寻找'}
+                    ]
+                },
+                { 
+                    verb: 'smile', 
+                    correctPrepositions: [
+                        {prep: 'at', translation: '对...微笑'}
+                    ]
+                },
+                { 
+                    verb: 'shout', 
+                    correctPrepositions: [
+                        {prep: 'at', translation: '对...大喊'}
+                    ]
+                },
+                { 
+                    verb: 'believe', 
+                    correctPrepositions: [
+                        {prep: 'in', translation: '相信'}
+                    ]
+                },
+                { 
+                    verb: 'depend', 
+                    correctPrepositions: [
+                        {prep: 'on', translation: '依靠'}
+                    ]
+                }
+            ],
+            medium: [
+                { 
+                    verb: 'look', 
+                    correctPrepositions: [
+                        {prep: 'at', translation: '看'},
+                        {prep: 'for', translation: '寻找'},
+                        {prep: 'after', translation: '照顾'}
+                    ]
+                },
+                { 
+                    verb: 'suffer', 
+                    correctPrepositions: [
+                        {prep: 'from', translation: '遭受'}
+                    ]
+                },
+                { 
+                    verb: 'wait', 
+                    correctPrepositions: [
+                        {prep: 'for', translation: '等待'}
+                    ]
+                },
+                { 
+                    verb: 'agree', 
+                    correctPrepositions: [
+                        {prep: 'with', translation: '同意某人'},
+                        {prep: 'to', translation: '同意某事'}
+                    ]
+                },
+                { 
+                    verb: 'insist', 
+                    correctPrepositions: [
+                        {prep: 'on', translation: '坚持'}
+                    ]
+                },
+                { 
+                    verb: 'apologize', 
+                    correctPrepositions: [
+                        {prep: 'for', translation: '为...道歉'}
+                    ]
+                }
+            ],
+            hard: [
+                { 
+                    verb: 'glance', 
+                    correctPrepositions: [
+                        {prep: 'at', translation: '瞥一眼'}
+                    ]
+                },
+                { 
+                    verb: 'stare', 
+                    correctPrepositions: [
+                        {prep: 'at', translation: '盯着看'}
+                    ]
+                },
+                { 
+                    verb: 'arrive', 
+                    correctPrepositions: [
+                        {prep: 'at', translation: '到达小地方'},
+                        {prep: 'in', translation: '到达大地方'}
+                    ]
+                },
+                { 
+                    verb: 'persist', 
+                    correctPrepositions: [
+                        {prep: 'in', translation: '坚持做某事'}
+                    ]
+                },
+                { 
+                    verb: 'comment', 
+                    correctPrepositions: [
+                        {prep: 'on', translation: '评论'}
+                    ]
+                },
+                { 
+                    verb: 'derive', 
+                    correctPrepositions: [
+                        {prep: 'from', translation: '源自'}
+                    ]
+                }
+            ]
+        };
+
+        // 游戏状态
+        const gameState = {
+            isPlaying: false,
+            selectedPreposition: null, // 当前选中的介词
+            currentTranslation: {
+                verb: '',
+                preposition: '',
+                correctTranslation: ''
+            },
+            matchedPairs: 0,
+            totalPairs: 0, // 总共有多少个需要匹配的搭配
+            attempts: 0,
+            timer: null,
+            seconds: 0,
+            countdownSeconds: 0, // 倒计时剩余秒数
+            originalCountdown: 0, // 初始倒计时秒数
+            timingMode: 'timed', // 计时模式：timed/countdown/untimed
+            difficulty: 'medium', // 难度级别
+            currentVerbs: [], // 当前游戏使用的动词
+            allPrepositions: [], // 所有需要匹配的介词
+            correctMatches: {}, // 正确的匹配关系：{动词ID: [介词1, 介词2...]}
+            prepositionTranslations: {}, // 存储介词和动词组合的正确翻译
+            gameStartTime: null, // 游戏开始时间戳
+            isReset: false // 标记游戏是否已重置
+        };
+
+        // 翻译同义词库（基于百度翻译常见译法扩展）
+        const translationSynonyms = {
+            '看': ['看', '观看', '查看', '瞧瞧', '注视'],
+            '寻找': ['寻找', '找寻', '查找', '搜寻', '寻觅'],
+            '对...微笑': ['对...微笑', '朝...笑', '向...微笑', '对着...笑'],
+            '对...大喊': ['对...大喊', '向...大叫', '对着...呼喊', '朝...喊叫'],
+            '相信': ['相信', '信任', '信赖', '确信', '信服'],
+            '依靠': ['依靠', '依赖', '依仗', '凭借', '依托'],
+            '照顾': ['照顾', '照料', '照看', '照管', '护理'],
+            '遭受': ['遭受', '蒙受', '遭遇', '承受', '受到'],
+            '等待': ['等待', '等候', '守候', '期待', '盼着'],
+            '同意某人': ['同意某人', '赞成某人', '赞同某人', '认可某人'],
+            '同意某事': ['同意某事', '赞成某事', '应允某事', '答应某事'],
+            '坚持': ['坚持', '执意', '坚守', '执意', '保持'],
+            '为...道歉': ['为...道歉', '向...致歉', '为...赔罪', '为...说对不起'],
+            '瞥一眼': ['瞥一眼', '瞥视', '扫一眼', '瞟一眼', '匆匆一看'],
+            '盯着看': ['盯着看', '凝视', '注视', '目不转睛地看', '紧盯'],
+            '到达小地方': ['到达小地方', '抵达小地点', '到小地方', '抵达小处'],
+            '到达大地方': ['到达大地方', '抵达大城市', '到大城市', '抵达大地方'],
+            '坚持做某事': ['坚持做某事', '执意做某事', '持续做某事', '一直做某事'],
+            '评论': ['评论', '评述', '议论', '评价', '谈论'],
+            '源自': ['源自', '来源于', '来自', '源于', '出自']
+        };
+
+        // DOM 元素
+        const verbsContainer = document.getElementById('verbsContainer').querySelector('div');
+        const prepositionsContainer = document.getElementById('prepositionsContainer').querySelector('div');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const historyBtn = document.getElementById('historyBtn');
+        const timerDisplay = document.getElementById('timer');
+        const timerLabel = document.getElementById('timerLabel');
+        const timerContainer = document.getElementById('timerContainer');
+        const attemptsDisplay = document.getElementById('attempts');
+        const matchesDisplay = document.getElementById('matches');
+        const gameOverModal = document.getElementById('gameOverModal');
+        const modalContent = document.getElementById('modalContent');
+        const finalTime = document.getElementById('finalTime');
+        const finalTimeContainer = document.getElementById('finalTimeContainer');
+        const finalAttempts = document.getElementById('finalAttempts');
+        const finalVerbCount = document.getElementById('finalVerbCount');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const closeResultBtn = document.getElementById('closeResultBtn');
+        const prepositionCountSelect = document.getElementById('prepositionCount');
+        const exportHistoryBtn = document.getElementById('exportHistoryBtn');
+        const timingModeSelect = document.getElementById('timingMode');
+        const countdownSettings = document.getElementById('countdownSettings');
+        const countdownDuration = document.getElementById('countdownDuration');
+        const completionText = document.getElementById('completionText');
+        const gameOverTitle = document.getElementById('gameOverTitle');
+        const gameOverIcon = document.getElementById('gameOverIcon');
+        const historyModal = document.getElementById('historyModal');
+        const historyModalContent = document.getElementById('historyModalContent');
+        const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const difficultySelect = document.getElementById('difficulty');
+        const playAgainConfirmModal = document.getElementById('playAgainConfirmModal');
+        const playAgainModalContent = document.getElementById('playAgainModalContent');
+        const confirmStartBtn = document.getElementById('confirmStartBtn');
+        const emptyHistory = document.getElementById('emptyHistory');
+        const historyList = document.getElementById('historyList');
+        
+        // 中文翻译输入弹窗元素
+        const translationInputModal = document.getElementById('translationInputModal');
+        const translationInputContent = document.getElementById('translationInputContent');
+        const phraseToTranslate = document.getElementById('phraseToTranslate');
+        const translationInput = document.getElementById('translationInput');
+        const saveTranslationBtn = document.getElementById('saveTranslationBtn');
+        const translationFeedback = document.getElementById('translationFeedback');
+
+        // 初始化事件监听
+        function initEventListeners() {
+            // 开始游戏按钮
+            startBtn.addEventListener('click', startGame);
+            
+            // 重置游戏按钮 - 确保重置功能正常
+            resetBtn.addEventListener('click', resetGame);
+            
+            // 查看历史按钮
+            historyBtn.addEventListener('click', showHistory);
+            
+            // 关闭历史按钮
+            closeHistoryBtn.addEventListener('click', hideHistory);
+            
+            // 清空历史按钮
+            clearHistoryBtn.addEventListener('click', clearHistory);
+            
+            // 导出历史按钮
+            exportHistoryBtn.addEventListener('click', exportHistory);
+            
+            // 再玩一次按钮
+            playAgainBtn.addEventListener('click', () => {
+                hideGameOverModal();
+                showPlayAgainConfirm();
+            });
+            
+            // 关闭结果按钮
+            closeResultBtn.addEventListener('click', () => {
+                hideGameOverModal();
+                resetGame();
+            });
+            
+            // 确认开始新游戏按钮
+            confirmStartBtn.addEventListener('click', () => {
+                hidePlayAgainConfirm();
+                startGame();
+            });
+            
+            // 计时方式选择变化
+            timingModeSelect.addEventListener('change', toggleCountdownSettings);
+            
+            // 保存翻译按钮
+            saveTranslationBtn.addEventListener('click', checkTranslation);
+            
+            // 翻译输入框回车提交
+            translationInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkTranslation();
+                }
+            });
+            
+            // 初始化时检查计时方式
+            toggleCountdownSettings();
+        }
+
+        // 切换倒计时设置显示
+        function toggleCountdownSettings() {
+            if (timingModeSelect.value === 'countdown') {
+                countdownSettings.classList.remove('hidden');
+            } else {
+                countdownSettings.classList.add('hidden');
+            }
+        }
+
+        // 开始游戏
+        function startGame() {
+            // 重置游戏状态
+            resetGameState();
+            
+            // 获取游戏设置
+            const verbCount = parseInt(prepositionCountSelect.value);
+            gameState.difficulty = difficultySelect.value;
+            gameState.timingMode = timingModeSelect.value;
+            
+            // 设置倒计时（如果需要）
+            if (gameState.timingMode === 'countdown') {
+                gameState.countdownSeconds = parseInt(countdownDuration.value);
+                gameState.originalCountdown = gameState.countdownSeconds;
+                timerLabel.textContent = '剩余时间: ';
+            } else if (gameState.timingMode === 'timed') {
+                gameState.seconds = 0;
+                timerLabel.textContent = '用时: ';
+            } else {
+                timerLabel.textContent = '时间: ';
+                timerDisplay.textContent = '--:--';
+            }
+            
+            // 选择随机动词
+            gameState.currentVerbs = getRandomVerbs(verbCount, gameState.difficulty);
+            
+            // 生成动词
+            createVerbCategories();
+            
+            // 生成介词选项
+            createPrepositionOptions();
+            
+            // 更新UI状态
+            document.getElementById('verbsContainer').classList.remove('opacity-50', 'pointer-events-none');
+            document.getElementById('prepositionsContainer').classList.remove('opacity-50', 'pointer-events-none');
+            startBtn.disabled = true;
+            startBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            startBtn.classList.remove('hover:bg-primary/90', 'hover:scale-105');
+            
+            // 启用重置按钮
+            resetBtn.disabled = false;
+            resetBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+            resetBtn.classList.add('hover:bg-gray-600', 'hover:scale-105');
+            
+            // 开始计时
+            if (gameState.timingMode !== 'untimed') {
+                startTimer();
+            }
+            
+            // 记录游戏开始时间
+            gameState.gameStartTime = new Date().getTime();
+            
+            // 更新匹配计数显示
+            updateMatchesDisplay();
+        }
+
+        // 重置游戏状态
+        function resetGameState() {
+            gameState.isPlaying = true;
+            gameState.matchedPairs = 0;
+            gameState.attempts = 0;
+            gameState.correctMatches = {};
+            gameState.allPrepositions = [];
+            gameState.selectedPreposition = null;
+            gameState.prepositionTranslations = {};
+            gameState.isReset = false;
+            gameState.totalPairs = 0; 
+            
+            // 清除计时器
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+                gameState.timer = null;
+            }
+            
+            // 重置显示
+            attemptsDisplay.textContent = '0';
+            timerDisplay.classList.remove('timer-warning');
+        }
+
+        // 重置游戏（回到初始状态）
+        function resetGame() {
+            resetGameState();
+            
+            // 清空容器
+            verbsContainer.innerHTML = '';
+            prepositionsContainer.innerHTML = '';
+            
+            // 重置UI状态
+            document.getElementById('verbsContainer').classList.add('opacity-50', 'pointer-events-none');
+            document.getElementById('prepositionsContainer').classList.add('opacity-50', 'pointer-events-none');
+            startBtn.disabled = false;
+            startBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+            startBtn.classList.add('hover:bg-primary/90', 'hover:scale-105');
+            
+            // 禁用重置按钮
+            resetBtn.disabled = true;
+            resetBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            resetBtn.classList.remove('hover:bg-gray-600', 'hover:scale-105');
+        }
+
+        // 从数据中选择随机动词
+        function getRandomVerbs(count, difficulty) {
+            const verbs = collocationData[difficulty];
+            const shuffled = [...verbs].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        // 创建动词分类
+        function createVerbCategories() {
+            verbsContainer.innerHTML = '';
+            
+            gameState.currentVerbs.forEach((item, index) => {
+                const verbId = `verb-${index}`;
+                
+                // 记录正确的匹配关系（存储介词）
+                const correctPreps = item.correctPrepositions.map(p => p.prep);
+                gameState.correctMatches[verbId] = correctPreps;
+                gameState.totalPairs += correctPreps.length;
+                
+                // 存储翻译信息
+                item.correctPrepositions.forEach(p => {
+                    gameState.prepositionTranslations[`${item.verb}-${p.prep}`] = p.translation;
+                });
+                
+                // 创建动词元素
+                const verb = document.createElement('div');
+                verb.id = verbId;
+                verb.className = 'category-box bg-white rounded-lg shadow-md border-2 border-primary/20 p-3 flex flex-col cursor-pointer hover:border-primary/50 transition-all duration-200';
+                
+                // 动词标题
+                const title = document.createElement('h3');
+                title.className = 'font-semibold text-primary mb-2 text-center';
+                title.textContent = item.verb;
+                verb.appendChild(title);
+                
+                // 介词容器（用于放置点击选择的介词）
+                const prepositionDropZone = document.createElement('div');
+                prepositionDropZone.className = 'flex-1 flex flex-wrap gap-2 justify-center items-center p-1 min-h-[60px]';
+                prepositionDropZone.setAttribute('data-verb', item.verb);
+                prepositionDropZone.setAttribute('data-verb-id', verbId);
+                
+                // 添加点击事件
+                prepositionDropZone.addEventListener('click', handleVerbClick);
+                
+                verb.appendChild(prepositionDropZone);
+                verbsContainer.appendChild(verb);
+            });
+        }
+
+        // 处理动词框点击
+        function handleVerbClick() {
+            if (!gameState.isPlaying || !gameState.selectedPreposition) return;
+            
+            const verbId = this.getAttribute('data-verb-id');
+            const verb = this.getAttribute('data-verb');
+            const prepositionItem = gameState.selectedPreposition;
+            
+            // 如果已经被放置过，不再处理
+            if (!prepositionItem || prepositionItem.parentNode !== prepositionsContainer) {
+                gameState.selectedPreposition = null;
+                return;
+            }
+            
+            // 增加尝试次数
+            gameState.attempts++;
+            attemptsDisplay.textContent = gameState.attempts;
+            
+            // 获取当前动词和介词
+            const prepositionValue = prepositionItem.dataset.preposition;
+            
+            // 检查是否匹配正确
+            const isCorrect = gameState.correctMatches[verbId]?.includes(prepositionValue) || false;
+            
+            // 克隆元素并添加到动词中
+            const clonedItem = prepositionItem.cloneNode(true);
+            clonedItem.classList.remove('cursor-pointer', 'hover:shadow-lg', 'selected');
+            clonedItem.classList.add('cursor-default');
+            
+            // 移除事件监听
+            clonedItem.removeEventListener('click', handlePrepositionClick);
+            
+            // 根据是否正确设置样式
+            if (isCorrect) {
+                clonedItem.classList.remove('bg-secondary/10', 'border-secondary/30', 'text-secondary');
+                clonedItem.classList.add('bg-green-100', 'border-green-300', 'text-green-700', 'matched');
+                
+                // 隐藏原始元素
+                prepositionItem.style.display = 'none';
+                
+                // 取消选择状态
+                gameState.selectedPreposition = null;
+                
+                // 保存当前需要翻译的动词和介词
+                gameState.currentTranslation = {
+                    verb: verb,
+                    preposition: prepositionValue,
+                    correctTranslation: gameState.prepositionTranslations[`${verb}-${prepositionValue}`]
+                };
+                
+                // 显示翻译输入弹窗
+                showTranslationInputModal();
+            } else {
+                clonedItem.classList.remove('bg-secondary/10', 'border-secondary/30', 'text-secondary');
+                clonedItem.classList.add('bg-red-100', 'border-red-300', 'text-red-700');
+                
+                // 3秒后移除错误的放置
+                setTimeout(() => {
+                    if (clonedItem.parentNode) {
+                        clonedItem.parentNode.removeChild(clonedItem);
+                    }
+                }, 1500);
+                
+                // 取消选择状态
+                gameState.selectedPreposition = null;
+                prepositionItem.classList.remove('selected');
+            }
+            
+            // 将克隆的元素添加到动词中
+            this.appendChild(clonedItem);
+        }
+
+        // 创建介词选项 - 确保同一个介词对应不同动词时显示对应数量的介词
+        function createPrepositionOptions() {
+            prepositionsContainer.innerHTML = '';
+            
+            // 收集所有需要的介词（包含重复项，确保每个匹配都有对应的介词）
+            const allPrepositions = [];
+            
+            gameState.currentVerbs.forEach(item => {
+                item.correctPrepositions.forEach(prep => {
+                    allPrepositions.push(prep.prep);
+                });
+            });
+            
+            // 打乱顺序
+            const shuffledPrepositions = allPrepositions.sort(() => 0.5 - Math.random());
+            
+            // 保存所有介词
+            gameState.allPrepositions = shuffledPrepositions;
+            
+            // 创建介词元素
+            shuffledPrepositions.forEach(prep => {
+                const preposition = document.createElement('div');
+                preposition.className = 'bg-white rounded-lg shadow-md bg-secondary/10 border-2 border-secondary/30 text-secondary p-2 text-center cursor-pointer hover:shadow-lg transition-all duration-200';
+                preposition.textContent = prep;
+                preposition.dataset.preposition = prep;
+                
+                // 添加点击事件
+                preposition.addEventListener('click', handlePrepositionClick);
+                
+                prepositionsContainer.appendChild(preposition);
+            });
+        }
+
+        // 处理介词点击
+        function handlePrepositionClick() {
+            if (!gameState.isPlaying) return;
+            
+            // 如果点击的是已选中的介词，则取消选择
+            if (gameState.selectedPreposition === this) {
+                this.classList.remove('selected');
+                gameState.selectedPreposition = null;
+                return;
+            }
+            
+            // 取消之前选中的介词
+            if (gameState.selectedPreposition) {
+                gameState.selectedPreposition.classList.remove('selected');
+            }
+            
+            // 选中当前介词
+            this.classList.add('selected');
+            gameState.selectedPreposition = this;
+        }
+
+        // 检查翻译是否正确
+        function checkTranslation() {
+            const userTranslation = translationInput.value.trim();
+            const correctTranslation = gameState.currentTranslation.correctTranslation;
+            
+            // 简单的模糊匹配（考虑同义词和常见翻译）
+            const isCorrect = isTranslationMatch(userTranslation, correctTranslation);
+            
+            // 显示反馈
+            translationFeedback.classList.remove('hidden', 'text-green-600', 'text-red-600');
+            
+            if (isCorrect) {
+                translationFeedback.classList.add('text-green-600');
+                translationFeedback.textContent = '翻译正确！';
+                
+                // 增加匹配计数
+                gameState.matchedPairs++;
+                updateMatchesDisplay();
+                
+                // 延迟关闭弹窗
+                setTimeout(() => {
+                    hideTranslationInputModal();
+                    
+                    // 检查是否所有匹配都已完成
+                    if (gameState.matchedPairs === gameState.totalPairs) {
+                        endGame();
+                    }
+                }, 800);
+            } else {
+                translationFeedback.classList.add('text-red-600');
+                translationFeedback.textContent = '翻译不正确，请再试一次。';
+                translationInput.focus();
+                // 不关闭弹窗，直到输入正确翻译
+            }
+        }
+
+        // 翻译匹配逻辑（基于同义词库）
+        function isTranslationMatch(userInput, correctTranslation) {
+            if (!userInput || !correctTranslation) return false;
+            
+            // 转为小写进行比较
+            const userLower = userInput.toLowerCase();
+            const correctLower = correctTranslation.toLowerCase();
+            
+            // 完全匹配
+            if (userLower === correctLower) return true;
+            
+            // 检查是否在同义词列表中
+            if (translationSynonyms[correctTranslation]) {
+                // 检查用户输入是否是正确翻译的同义词之一
+                return translationSynonyms[correctTranslation].some(synonym => 
+                    userLower.includes(synonym.toLowerCase()) || 
+                    synonym.toLowerCase().includes(userLower)
+                );
+            }
+            
+            // 对于复杂翻译（如"同意某人"），检查是否包含核心词
+            const coreWords = correctLower.split(/[^\u4e00-\u9fa5]/).filter(word => word);
+            if (coreWords.length > 0) {
+                return coreWords.every(word => userLower.includes(word));
+            }
+            
+            return false;
+        }
+
+        // 显示翻译输入弹窗
+        function showTranslationInputModal() {
+            translationInputModal.classList.remove('hidden');
+            // 重置输入和反馈
+            translationInput.value = '';
+            translationFeedback.classList.add('hidden');
+            // 设置要翻译的短语（只显示动词和介词）
+            phraseToTranslate.textContent = `请输入 "${gameState.currentTranslation.verb} + ${gameState.currentTranslation.preposition}" 的中文翻译`;
+            
+            // 触发动画
+            setTimeout(() => {
+                translationInputContent.classList.remove('scale-95', 'opacity-0');
+                translationInputContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            
+            // 聚焦输入框
+            setTimeout(() => {
+                translationInput.focus();
+            }, 300);
+        }
+
+        // 隐藏翻译输入弹窗
+        function hideTranslationInputModal() {
+            translationInputContent.classList.remove('scale-100', 'opacity-100');
+            translationInputContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                translationInputModal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 开始计时器
+        function startTimer() {
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+            }
+            
+            gameState.timer = setInterval(() => {
+                if (gameState.timingMode === 'timed') {
+                    gameState.seconds++;
+                    updateTimerDisplay(gameState.seconds);
+                } else if (gameState.timingMode === 'countdown') {
+                    gameState.countdownSeconds--;
+                    updateTimerDisplay(gameState.countdownSeconds);
+                    
+                    // 倒计时警告
+                    if (gameState.countdownSeconds <= 10) {
+                        timerDisplay.classList.add('timer-warning');
+                    }
+                    
+                    // 倒计时结束
+                    if (gameState.countdownSeconds <= 0) {
+                        clearInterval(gameState.timer);
+                        gameState.isPlaying = false;
+                        showGameOverModal(false);
+                    }
+                }
+            }, 1000);
+        }
+
+        // 更新计时器显示
+        function updateTimerDisplay(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // 更新匹配计数显示
+        function updateMatchesDisplay() {
+            matchesDisplay.textContent = `${gameState.matchedPairs}/${gameState.totalPairs}`;
+        }
+
+        // 结束游戏
+        function endGame() {
+            gameState.isPlaying = false;
+            
+            // 停止计时器
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+                gameState.timer = null;
+            }
+            
+            // 显示游戏结束弹窗
+            showGameOverModal(true);
+            
+            // 保存游戏记录
+            saveGameHistory(true);
+        }
+
+        // 显示游戏结束弹窗
+        function showGameOverModal(isSuccess) {
+            // 设置弹窗内容
+            if (isSuccess) {
+                gameOverTitle.textContent = '恭喜你！';
+                gameOverIcon.innerHTML = '<i class="fa fa-trophy text-2xl text-yellow-500"></i>';
+                gameOverIcon.className = 'inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-3';
+                completionText.textContent = '你已完成所有固定搭配的匹配';
+                
+                // 设置最终时间
+                if (gameState.timingMode === 'timed') {
+                    finalTime.textContent = formatTime(gameState.seconds);
+                } else if (gameState.timingMode === 'countdown') {
+                    finalTime.textContent = formatTime(gameState.countdownSeconds);
+                } else {
+                    finalTime.textContent = '--:--';
+                }
+            } else {
+                gameOverTitle.textContent = '时间到！';
+                gameOverIcon.innerHTML = '<i class="fa fa-clock-o text-2xl text-red-500"></i>';
+                gameOverIcon.className = 'inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mb-3';
+                completionText.textContent = '很遗憾，未能在规定时间内完成所有匹配';
+                finalTime.textContent = '00:00';
+            }
+            
+            // 设置其他统计数据
+            finalAttempts.textContent = gameState.attempts;
+            finalVerbCount.textContent = gameState.currentVerbs.length;
+            
+            // 显示弹窗
+            gameOverModal.classList.remove('hidden');
+            
+            // 触发动画
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        // 隐藏游戏结束弹窗
+        function hideGameOverModal() {
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                gameOverModal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 显示再玩一次确认弹窗
+        function showPlayAgainConfirm() {
+            playAgainConfirmModal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                playAgainModalContent.classList.remove('scale-95', 'opacity-0');
+                playAgainModalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        // 隐藏再玩一次确认弹窗
+        function hidePlayAgainConfirm() {
+            playAgainModalContent.classList.remove('scale-100', 'opacity-100');
+            playAgainModalContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                playAgainConfirmModal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 格式化时间显示
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // 保存游戏历史
+        function saveGameHistory(isSuccess) {
+            let history = JSON.parse(localStorage.getItem('collocationGameHistory') || '[]');
+            
+            const gameRecord = {
+                id: Date.now(),
+                date: new Date().toLocaleString(),
+                difficulty: gameState.difficulty,
+                verbCount: gameState.currentVerbs.length,
+                attempts: gameState.attempts,
+                isSuccess: isSuccess,
+                time: gameState.timingMode === 'timed' ? gameState.seconds : 
+                      (gameState.timingMode === 'countdown' ? gameState.originalCountdown - gameState.countdownSeconds : 0)
+            };
+            
+            history.unshift(gameRecord);
+            
+            // 限制历史记录数量
+            if (history.length > 20) {
+                history = history.slice(0, 20);
+            }
+            
+            localStorage.setItem('collocationGameHistory', JSON.stringify(history));
+        }
+
+        // 显示历史记录
+        function showHistory() {
+            const history = JSON.parse(localStorage.getItem('collocationGameHistory') || '[]');
+            historyList.innerHTML = '';
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="text-center text-gray-500 py-6 text-sm">暂无历史记录</div>';
+            } else {
+                history.forEach(record => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'bg-gray-50 rounded-lg p-3 border border-gray-100';
+                    
+                    const difficultyLabels = {
+                        'easy': '简单',
+                        'medium': '中等',
+                        'hard': '困难'
+                    };
+                    
+                    historyItem.innerHTML = `
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-medium ${record.isSuccess ? 'text-green-600' : 'text-red-600'}">
+                                ${record.isSuccess ? '成功完成' : '未完成'}
+                            </span>
+                            <span class="text-xs text-gray-500">${record.date}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1 text-xs text-gray-600">
+                            <div>难度: ${difficultyLabels[record.difficulty]}</div>
+                            <div>动词数量: ${record.verbCount}个</div>
+                            <div>尝试次数: ${record.attempts}</div>
+                            <div>用时: ${formatTime(record.time)}</div>
+                        </div>
+                    `;
+                    
+                    historyList.appendChild(historyItem);
+                });
+            }
+            
+            historyModal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                historyModalContent.classList.remove('scale-95', 'opacity-0');
+                historyModalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        // 隐藏历史记录
+        function hideHistory() {
+            historyModalContent.classList.remove('scale-100', 'opacity-100');
+            historyModalContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                historyModal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 清空历史记录
+        function clearHistory() {
+            if (confirm('确定要清空所有游戏历史记录吗？此操作不可恢复。')) {
+                localStorage.removeItem('collocationGameHistory');
+                showHistory();
+            }
+        }
+
+        // 导出历史记录
+        function exportHistory() {
+            const history = JSON.parse(localStorage.getItem('collocationGameHistory') || '[]');
+            
+            if (history.length === 0) {
+                alert('没有可导出的历史记录');
+                return;
+            }
+            
+            const difficultyLabels = {
+                'easy': '简单',
+                'medium': '中等',
+                'hard': '困难'
+            };
+            
+            // 构建CSV内容
+            let csvContent = '日期,难度,动词数量,尝试次数,用时,结果\n';
+            
+            history.forEach(record => {
+                const result = record.isSuccess ? '成功' : '失败';
+                csvContent += `${record.date},${difficultyLabels[record.difficulty]},${record.verbCount},${record.attempts},${formatTime(record.time)},${result}\n`;
+            });
+            
+            // 创建下载链接
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `英语固定搭配游戏历史_${new Date().toLocaleDateString()}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 初始化游戏
+        function init() {
+            initEventListeners();
+        }
+
+        // 启动游戏
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+    
