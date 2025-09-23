@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词练习 - 英语单词匹配</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        neutral: '#64748B',
+                        danger: '#EF4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .btn-hover {
+                transition: all 0.3s ease;
+            }
+            .btn-hover:hover {
+                transform: translateY(-2px);
+            }
+            .option-hover {
+                transition: all 0.2s ease;
+            }
+            .option-hover:hover {
+                background-color: rgba(59, 130, 246, 0.05);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-12 max-w-2xl">
+        <!-- 主页面 - 仅包含开始按钮 -->
+        <div id="main-page" class="bg-white rounded-xl p-8 card-shadow text-center transform transition-all duration-300">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">英语单词练习</h1>
+            <p class="text-gray-600 mb-8">提升你的英语词汇量，每组10个单词，分模式练习</p>
+            <button id="start-button" class="bg-primary text-white py-4 px-10 rounded-lg font-medium btn-hover text-lg">
+                开始练习 <i class="fa fa-play ml-2"></i>
+            </button>
+        </div>
+        
+        <!-- 练习区域 -->
+        <div id="exercise-area" class="hidden bg-white rounded-xl p-6 card-shadow mb-6 transform transition-all duration-300">
+            <!-- 顶部信息 -->
+            <div class="flex justify-between items-center mb-6">
+                <div class="inline-block px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                    <span id="progress-text">模式1 - 1/10</span>
+                </div>
+                <div class="inline-flex items-center text-sm text-gray-600">
+                    <i class="fa fa-check-circle text-secondary mr-1"></i>
+                    <span id="score">0</span>
+                </div>
+            </div>
+            
+            <!-- 当前模式提示 -->
+            <div id="mode-indicator" class="mb-6 p-3 bg-primary/5 rounded-lg text-center">
+                <h4 class="text-primary font-medium"><span id="current-mode-text">看中文选英文</span></h4>
+            </div>
+            
+            <!-- 问题区 -->
+            <div class="mb-8 text-center">
+                <div class="inline-block px-3 py-1 bg-primary/10 text-primary rounded-full text-sm mb-4">
+                    <span id="word-type">名词</span>
+                </div>
+                <h3 id="question" class="text-2xl md:text-3xl font-bold text-gray-800 mb-3">问题将在这里显示</h3>
+                <p id="pronunciation" class="text-gray-500 italic mb-3">/ˈæpl/</p>
+                <button id="play-audio" class="text-primary hover:text-primary/80 transition-colors inline-flex items-center">
+                    <i class="fa fa-volume-up mr-1"></i> 听发音
+                </button>
+            </div>
+            
+            <!-- 选项区域 (模式1和2) -->
+            <div id="options-area" class="space-y-2 mb-6">
+                <!-- 选项将通过JS动态生成 -->
+            </div>
+            
+            <!-- 输入区域 (模式3) -->
+            <div id="input-area" class="hidden mb-6">
+                <input type="text" id="word-input" placeholder="请输入对应的英文单词" 
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-lg">
+                <button id="submit-answer" class="mt-3 bg-accent text-white py-2 px-6 rounded-lg font-medium btn-hover">
+                    提交答案
+                </button>
+            </div>
+            
+            <!-- 反馈区域 -->
+            <div id="feedback" class="hidden p-4 rounded-lg mb-6 transition-all duration-300">
+                <!-- 反馈将通过JS动态生成 -->
+            </div>
+            
+            <div class="flex justify-between">
+                <button id="back-to-main" class="bg-gray-200 text-gray-700 py-2 px-6 rounded-lg font-medium btn-hover">
+                    <i class="fa fa-arrow-left mr-1"></i> 返回
+                </button>
+                <button id="next-question" class="bg-primary text-white py-2 px-6 rounded-lg font-medium btn-hover hidden">
+                    下一题 <i class="fa fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 结果区域 -->
+        <div id="results-area" class="hidden bg-white rounded-xl p-6 card-shadow text-center transform transition-all duration-300">
+            <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa fa-trophy text-4xl text-primary"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">练习完成!</h2>
+            <p class="text-gray-600 mb-6">恭喜你完成了一组单词练习（10个单词，共30题）</p>
+            
+            <div class="mb-8">
+                <div class="inline-flex items-center justify-center w-32 h-32 rounded-full border-8 border-primary/20 mb-4">
+                    <span id="final-score" class="text-4xl font-bold text-primary">0</span>
+                    <span class="text-gray-500 text-lg ml-1">/30</span>
+                </div>
+                <p id="result-message" class="text-gray-600 text-lg"></p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-3">
+                <button id="review-mistakes" class="bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-medium btn-hover">
+                    复习错题
+                </button>
+                <button id="restart" class="bg-primary text-white py-3 px-8 rounded-lg font-medium btn-hover">
+                    再练习一组
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let words = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questions = []; // 存储所有问题，先所有单词模式1，再模式2，最后模式3
+        let mistakes = [];
+        const AUTO_NEXT_DELAY = 1500; // 正确答案后自动跳转延迟时间(毫秒)
+        const WORDS_PER_SET = 10; // 每组10个单词
+        const MODES_COUNT = 3; // 共3种模式
+        
+        // 模式文本说明
+        const modeDescriptions = {
+            1: "看中文选英文",
+            2: "看英文选中文",
+            3: "看中文输英文"
+        };
+        
+        // DOM元素
+        const mainPage = document.getElementById('main-page');
+        const exerciseArea = document.getElementById('exercise-area');
+        const resultsArea = document.getElementById('results-area');
+        const optionsArea = document.getElementById('options-area');
+        const inputArea = document.getElementById('input-area');
+        const questionElement = document.getElementById('question');
+        const progressText = document.getElementById('progress-text');
+        const scoreElement = document.getElementById('score');
+        const feedbackElement = document.getElementById('feedback');
+        const finalScoreElement = document.getElementById('final-score');
+        const resultMessageElement = document.getElementById('result-message');
+        const wordInput = document.getElementById('word-input');
+        const pronunciationElement = document.getElementById('pronunciation');
+        const wordTypeElement = document.getElementById('word-type');
+        const currentModeTextElement = document.getElementById('current-mode-text');
+        const nextButton = document.getElementById('next-question');
+        
+        // 默认单词库
+        const defaultWords = [
+            { english: "apple", chinese: "苹果", partOfSpeech: "名词", pronunciation: "/ˈæpl/" },
+            { english: "banana", chinese: "香蕉", partOfSpeech: "名词", pronunciation: "/bəˈnɑːnə/" },
+            { english: "orange", chinese: "橙子", partOfSpeech: "名词", pronunciation: "/ˈɒrɪndʒ/" },
+            { english: "grape", chinese: "葡萄", partOfSpeech: "名词", pronunciation: "/ɡreɪp/" },
+            { english: "watermelon", chinese: "西瓜", partOfSpeech: "名词", pronunciation: "/ˈwɔːtəmelən/" },
+            { english: "cat", chinese: "猫", partOfSpeech: "名词", pronunciation: "/kæt/" },
+            { english: "dog", chinese: "狗", partOfSpeech: "名词", pronunciation: "/dɒɡ/" },
+            { english: "bird", chinese: "鸟", partOfSpeech: "名词", pronunciation: "/bɜːd/" },
+            { english: "fish", chinese: "鱼", partOfSpeech: "名词", pronunciation: "/fɪʃ/" },
+            { english: "rabbit", chinese: "兔子", partOfSpeech: "名词", pronunciation: "/ˈræbɪt/" },
+            { english: "run", chinese: "跑", partOfSpeech: "动词", pronunciation: "/rʌn/" },
+            { english: "walk", chinese: "走", partOfSpeech: "动词", pronunciation: "/wɔːk/" },
+            { english: "jump", chinese: "跳", partOfSpeech: "动词", pronunciation: "/dʒʌmp/" },
+            { english: "eat", chinese: "吃", partOfSpeech: "动词", pronunciation: "/iːt/" },
+            { english: "drink", chinese: "喝", partOfSpeech: "动词", pronunciation: "/drɪŋk/" }
+        ];
+        
+        // 初始化事件监听
+        function initEventListeners() {
+            // 主页面按钮
+            document.getElementById('start-button').addEventListener('click', startExercise);
+            document.getElementById('back-to-main').addEventListener('click', showMainPage);
+            
+            // 其他按钮
+            nextButton.addEventListener('click', showNextQuestion);
+            document.getElementById('restart').addEventListener('click', restartExercise);
+            document.getElementById('submit-answer').addEventListener('click', checkInputAnswer);
+            document.getElementById('play-audio').addEventListener('click', playPronunciation);
+            document.getElementById('review-mistakes').addEventListener('click', reviewMistakes);
+            
+            // 回车键提交答案（模式3）
+            wordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    checkInputAnswer();
+                }
+            });
+        }
+        
+        // 从后台加载CSV文件
+        function loadCSVFromBackend() {
+            // 实际应用中，这里会通过fetch API从服务器加载CSV文件
+            // 示例代码：
+            // fetch('vocabulary.csv')
+            //   .then(response => {
+            //     if (!response.ok) throw new Error('网络响应不正常');
+            //     return response.text();
+            //   })
+            //   .then(content => parseCSV(content))
+            //   .catch(error => {
+            //     console.error('加载CSV失败，使用默认单词库:', error);
+            //     words = [...defaultWords];
+            //   });
+            
+            // 演示用：直接使用默认单词库
+            words = [...defaultWords];
+            console.log('已从后台加载单词数据');
+        }
+        
+        // 解析CSV内容
+        function parseCSV(content) {
+            const lines = content.split('\n');
+            words = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line && i > 0) { // 跳过标题行
+                    const parts = line.split(',');
+                    if (parts.length >= 2) {
+                        words.push({
+                            english: parts[0].trim(),
+                            chinese: parts[1].trim(),
+                            partOfSpeech: parts[2] ? parts[2].trim() : '',
+                            pronunciation: parts[3] ? parts[3].trim() : ''
+                        });
+                    }
+                }
+            }
+            
+            if (words.length === 0) {
+                console.warn('CSV文件格式不正确，使用默认单词库');
+                words = [...defaultWords];
+            }
+        }
+        
+        // 开始练习
+        function startExercise() {
+            currentQuestionIndex = 0;
+            score = 0;
+            mistakes = [];
+            
+            // 生成问题 - 先所有单词模式1，再模式2，最后模式3
+            generateQuestions();
+            
+            // 更新UI
+            mainPage.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                mainPage.classList.add('hidden');
+                exerciseArea.classList.remove('hidden');
+                setTimeout(() => {
+                    exerciseArea.classList.add('scale-100', 'opacity-100');
+                    exerciseArea.classList.remove('scale-95', 'opacity-0');
+                }, 50);
+            }, 300);
+            
+            resultsArea.classList.add('hidden');
+            
+            // 显示第一个问题
+            showQuestion(currentQuestionIndex);
+            updateProgressAndScore();
+        }
+        
+        // 生成问题 - 先所有单词模式1，再模式2，最后模式3
+        function generateQuestions() {
+            questions = [];
+            const usedIndices = new Set();
+            const selectedWords = [];
+            const numWords = Math.min(WORDS_PER_SET, words.length);
+            
+            // 随机选择10个单词
+            while (usedIndices.size < numWords) {
+                const randomIndex = Math.floor(Math.random() * words.length);
+                if (!usedIndices.has(randomIndex)) {
+                    usedIndices.add(randomIndex);
+                    selectedWords.push(words[randomIndex]);
+                }
+            }
+            
+            // 先添加所有单词的模式1问题
+            selectedWords.forEach(word => {
+                questions.push({
+                    word: word,
+                    mode: 1 // 模式1: 看中文选英文
+                });
+            });
+            
+            // 再添加所有单词的模式2问题
+            selectedWords.forEach(word => {
+                questions.push({
+                    word: word,
+                    mode: 2 // 模式2: 看英文选中文
+                });
+            });
+            
+            // 最后添加所有单词的模式3问题
+            selectedWords.forEach(word => {
+                questions.push({
+                    word: word,
+                    mode: 3 // 模式3: 看中文输英文
+                });
+            });
+        }
+        
+        // 显示问题
+        function showQuestion(index) {
+            if (index >= questions.length) {
+                showResults();
+                return;
+            }
+            
+            const question = questions[index];
+            const word = question.word;
+            const mode = question.mode;
+            
+            feedbackElement.classList.add('hidden');
+            feedbackElement.className = 'hidden p-4 rounded-lg mb-6 transition-all duration-300';
+            nextButton.classList.add('hidden');
+            
+            // 更新当前模式文本说明
+            currentModeTextElement.textContent = modeDescriptions[mode];
+            
+            // 更新单词类型
+            wordTypeElement.textContent = word.partOfSpeech || '单词';
+            
+            // 更新发音
+            pronunciationElement.textContent = word.pronunciation || '';
+            
+            // 根据模式显示不同的问题形式
+            if (mode === 1) {
+                // 模式1: 看中文选英文
+                questionElement.textContent = word.chinese;
+                optionsArea.classList.remove('hidden');
+                inputArea.classList.add('hidden');
+                generateOptions(word, 'english');
+            } else if (mode === 2) {
+                // 模式2: 看英文选中文
+                questionElement.textContent = word.english;
+                optionsArea.classList.remove('hidden');
+                inputArea.classList.add('hidden');
+                generateOptions(word, 'chinese');
+            } else {
+                // 模式3: 看中文输英文
+                questionElement.textContent = word.chinese;
+                optionsArea.classList.add('hidden');
+                inputArea.classList.remove('hidden');
+                wordInput.value = '';
+                wordInput.focus();
+                wordInput.disabled = false;
+                document.getElementById('submit-answer').disabled = false;
+            }
+            
+            updateProgressAndScore();
+        }
+        
+        // 播放发音
+        function playPronunciation() {
+            const question = questions[currentQuestionIndex];
+            const word = question.word;
+            const mode = question.mode;
+            
+            if (mode === 1 || mode === 3) {
+                // 播放英文单词发音
+                const utterance = new SpeechSynthesisUtterance(word.english);
+                utterance.lang = 'en-US';
+                window.speechSynthesis.speak(utterance);
+            } else {
+                // 播放中文释义发音
+                const utterance = new SpeechSynthesisUtterance(word.chinese);
+                utterance.lang = 'zh-CN';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+        
+        // 生成选项（模式1和2）
+        function generateOptions(correctWord, targetProperty) {
+            optionsArea.innerHTML = '';
+            const options = [correctWord];
+            const usedIndices = new Set();
+            usedIndices.add(words.indexOf(correctWord));
+            
+            // 寻找形近词作为干扰项
+            let similarWords = findSimilarWords(correctWord.english);
+            
+            // 如果找到的形近词不足，用随机单词补充
+            while (options.length < 4) {
+                let randomWord;
+                if (similarWords.length > 0) {
+                    randomWord = similarWords.pop();
+                } else {
+                    let randomIndex;
+                    do {
+                        randomIndex = Math.floor(Math.random() * words.length);
+                    } while (usedIndices.has(randomIndex));
+                    randomWord = words[randomIndex];
+                }
+                
+                if (!options.includes(randomWord)) {
+                    options.push(randomWord);
+                    usedIndices.add(words.indexOf(randomWord));
+                }
+            }
+            
+            // 打乱选项顺序
+            shuffleArray(options);
+            
+            // 创建选项按钮
+            options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'w-full text-left border border-gray-200 rounded-lg p-4 font-medium option-hover';
+                button.innerHTML = `<span class="inline-block w-6 h-6 rounded-full border border-gray-300 text-center mr-3">${index + 1}</span>${option[targetProperty]}`;
+                button.addEventListener('click', () => checkAnswer(option === correctWord, correctWord[targetProperty], option, correctWord));
+                optionsArea.appendChild(button);
+            });
+        }
+        
+        // 寻找形近词
+        function findSimilarWords(word) {
+            return words.filter(w => {
+                if (w.english === word) return false;
+                
+                // 长度差异不超过2
+                if (Math.abs(w.english.length - word.length) > 2) return false;
+                
+                // 计算字符差异
+                const diffCount = calculateCharacterDifference(word, w.english);
+                
+                // 差异较小的认为是形近词
+                return diffCount <= 2 || 
+                       (word.length > 5 && diffCount <= 3) ||
+                       (word.length > 3 && w.english.startsWith(word.substring(0, 2)));
+            });
+        }
+        
+        // 计算两个单词的字符差异
+        function calculateCharacterDifference(word1, word2) {
+            let diff = Math.abs(word1.length - word2.length);
+            const minLength = Math.min(word1.length, word2.length);
+            
+            for (let i = 0; i < minLength; i++) {
+                if (word1[i] !== word2[i]) {
+                    diff++;
+                }
+            }
+            
+            return diff;
+        }
+        
+        // 检查选项答案（模式1和2）
+        function checkAnswer(isCorrect, correctAnswer, selectedOption, correctWord) {
+            // 禁用所有选项
+            const buttons = optionsArea.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.disabled = true;
+                button.classList.remove('option-hover');
+            });
+            
+            // 记录错误
+            if (!isCorrect) {
+                mistakes.push({
+                    question: questions[currentQuestionIndex],
+                    userAnswer: selectedOption,
+                    correctAnswer: correctWord
+                });
+            }
+            
+            // 更新选项样式
+            buttons.forEach(button => {
+                // 检查是否是正确答案
+                if (button.textContent.includes(correctAnswer)) {
+                    button.classList.add('bg-secondary/10', 'border-secondary/30');
+                    const span = button.querySelector('span');
+                    span.classList.remove('border-gray-300');
+                    span.classList.add('bg-secondary', 'text-white', 'border-secondary');
+                    span.innerHTML = '<i class="fa fa-check text-xs"></i>';
+                } 
+                // 检查是否是用户选择的错误答案
+                else if (!isCorrect && button === event.target) {
+                    button.classList.add('bg-danger/10', 'border-danger/30');
+                    const span = button.querySelector('span');
+                    span.classList.remove('border-gray-300');
+                    span.classList.add('bg-danger', 'text-white', 'border-danger');
+                    span.innerHTML = '<i class="fa fa-times text-xs"></i>';
+                }
+            });
+            
+            // 显示反馈
+            feedbackElement.classList.remove('hidden');
+            if (isCorrect) {
+                score++;
+                feedbackElement.innerHTML = '<i class="fa fa-check-circle text-secondary mr-2"></i> 正确！';
+                feedbackElement.classList.add('bg-green-50', 'text-green-800', 'border', 'border-green-100');
+                
+                // 正确答案自动跳转到下一题
+                setTimeout(showNextQuestion, AUTO_NEXT_DELAY);
+            } else {
+                feedbackElement.innerHTML = `<i class="fa fa-times-circle text-danger mr-2"></i> 错误，正确答案是：${correctAnswer}`;
+                feedbackElement.classList.add('bg-red-50', 'text-red-800', 'border', 'border-red-100');
+                
+                // 错误时显示下一题按钮
+                nextButton.classList.remove('hidden');
+            }
+            
+            updateProgressAndScore();
+        }
+        
+        // 检查输入答案（模式3）
+        function checkInputAnswer() {
+            const question = questions[currentQuestionIndex];
+            const word = question.word;
+            const userAnswer = wordInput.value.trim().toLowerCase();
+            const correctAnswer = word.english.toLowerCase();
+            const isCorrect = userAnswer === correctAnswer;
+            
+            // 禁用输入和提交按钮
+            wordInput.disabled = true;
+            document.getElementById('submit-answer').disabled = true;
+            
+            // 记录错误
+            if (!isCorrect) {
+                mistakes.push({
+                    question: question,
+                    userAnswer: userAnswer,
+                    correctAnswer: word
+                });
+            }
+            
+            // 显示反馈
+            feedbackElement.classList.remove('hidden');
+            if (isCorrect) {
+                score++;
+                feedbackElement.innerHTML = '<i class="fa fa-check-circle text-secondary mr-2"></i> 正确！';
+                feedbackElement.classList.add('bg-green-50', 'text-green-800', 'border', 'border-green-100');
+                
+                // 正确答案自动跳转到下一题
+                setTimeout(showNextQuestion, AUTO_NEXT_DELAY);
+            } else {
+                feedbackElement.innerHTML = `<i class="fa fa-times-circle text-danger mr-2"></i> 错误，正确答案是：${word.english}`;
+                feedbackElement.classList.add('bg-red-50', 'text-red-800', 'border', 'border-red-100');
+                
+                // 错误时显示下一题按钮
+                nextButton.classList.remove('hidden');
+            }
+            
+            updateProgressAndScore();
+        }
+        
+        // 显示下一题
+        function showNextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                // 添加过渡动画
+                exerciseArea.classList.add('opacity-80');
+                
+                setTimeout(() => {
+                    showQuestion(currentQuestionIndex);
+                    // 移除过渡动画类
+                    exerciseArea.classList.remove('opacity-80');
+                }, 200);
+            } else {
+                showResults();
+            }
+        }
+        
+        // 显示结果
+        function showResults() {
+            exerciseArea.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                exerciseArea.classList.add('hidden');
+                resultsArea.classList.remove('hidden');
+                setTimeout(() => {
+                    resultsArea.classList.add('scale-100', 'opacity-100');
+                    resultsArea.classList.remove('scale-95', 'opacity-0');
+                }, 50);
+                
+                finalScoreElement.textContent = score;
+                
+                // 根据得分显示不同的消息
+                let message = '';
+                const percentage = (score / questions.length) * 100;
+                
+                if (percentage === 100) {
+                    message = '太棒了！你全部答对了！';
+                } else if (percentage >= 80) {
+                    message = '非常好！继续努力！';
+                } else if (percentage >= 60) {
+                    message = '不错，还可以做得更好！';
+                } else {
+                    message = '继续加油，多练习一定会有进步！';
+                }
+                
+                resultMessageElement.textContent = message;
+                
+                // 如果有错误，显示复习按钮
+                if (mistakes.length === 0) {
+                    document.getElementById('review-mistakes').classList.add('hidden');
+                } else {
+                    document.getElementById('review-mistakes').classList.remove('hidden');
+                    document.getElementById('review-mistakes').textContent = `复习错题 (${mistakes.length})`;
+                }
+            }, 300);
+        }
+        
+        // 复习错题
+        function reviewMistakes() {
+            if (mistakes.length === 0) return;
+            
+            // 用错题生成新的问题集
+            questions = mistakes.map(m => m.question);
+            currentQuestionIndex = 0;
+            score = 0;
+            mistakes = [];
+            
+            resultsArea.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                resultsArea.classList.add('hidden');
+                exerciseArea.classList.remove('hidden');
+                setTimeout(() => {
+                    exerciseArea.classList.add('scale-100', 'opacity-100');
+                    exerciseArea.classList.remove('scale-95', 'opacity-0');
+                }, 50);
+                
+                showQuestion(currentQuestionIndex);
+            }, 300);
+        }
+        
+        // 返回主页面
+        function showMainPage() {
+            exerciseArea.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                exerciseArea.classList.add('hidden');
+                mainPage.classList.remove('hidden');
+                setTimeout(() => {
+                    mainPage.classList.add('scale-100', 'opacity-100');
+                    mainPage.classList.remove('scale-95', 'opacity-0');
+                }, 50);
+            }, 300);
+        }
+        
+        // 重新开始练习
+        function restartExercise() {
+            resultsArea.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                startExercise();
+            }, 300);
+        }
+        
+        // 更新进度和分数
+        function updateProgressAndScore() {
+            // 计算当前模式和该模式下的进度
+            const currentMode = Math.floor(currentQuestionIndex / WORDS_PER_SET) + 1;
+            const positionInMode = (currentQuestionIndex % WORDS_PER_SET) + 1;
+            
+            progressText.textContent = `模式${currentMode} - ${positionInMode}/${WORDS_PER_SET}`;
+            scoreElement.textContent = score;
+        }
+        
+        // 打乱数组顺序
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initEventListeners();
+            // 从后台加载单词库
+            loadCSVFromBackend();
+        });
+    </script>
+</body>
+</html>
