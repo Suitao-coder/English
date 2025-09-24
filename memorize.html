@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语言记忆助手</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        neutral: '#1F2937',
+                        'neutral-light': '#F3F4F6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-neutral">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md fixed w-full top-0 z-50 transition-custom">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-language text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">语言记忆助手</h1>
+            </div>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#settings" class="text-neutral hover:text-primary transition-custom"><i class="fa fa-cog mr-1"></i> 设置</a></li>
+                    <li><a href="#history" class="text-neutral hover:text-primary transition-custom"><i class="fa fa-history mr-1"></i> 历史</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 pt-24 pb-16">
+        <!-- 初始设置区域 -->
+        <section id="settings" class="max-w-2xl mx-auto bg-white rounded-xl p-6 md:p-8 shadow-lg mb-8 transform transition-all duration-500">
+            <h2 class="text-2xl font-bold mb-6 text-center text-neutral">学习设置</h2>
+            
+            <div class="space-y-6">
+                <!-- 数据加载状态 -->
+                <div id="loading-status" class="text-center py-4">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
+                    <p class="text-gray-600">正在加载数据...</p>
+                </div>
+                
+                <!-- 内容类型选择 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">选择学习内容类型</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="relative">
+                            <input type="radio" id="type-word" name="content-type" value="单词" class="peer sr-only" checked>
+                            <label for="type-word" class="block p-4 border-2 rounded-lg cursor-pointer text-center transition-custom peer-checked:border-primary peer-checked:bg-primary/5 hover:border-primary/70">
+                                <i class="fa fa-book text-xl mb-2 text-primary"></i>
+                                <span>单词</span>
+                            </label>
+                        </div>
+                        <div class="relative">
+                            <input type="radio" id="type-phrase" name="content-type" value="短语" class="peer sr-only">
+                            <label for="type-phrase" class="block p-4 border-2 rounded-lg cursor-pointer text-center transition-custom peer-checked:border-primary peer-checked:bg-primary/5 hover:border-primary/70">
+                                <i class="fa fa-comment text-xl mb-2 text-primary"></i>
+                                <span>短语</span>
+                            </label>
+                        </div>
+                        <div class="relative">
+                            <input type="radio" id="type-sentence" name="content-type" value="句子" class="peer sr-only">
+                            <label for="type-sentence" class="block p-4 border-2 rounded-lg cursor-pointer text-center transition-custom peer-checked:border-primary peer-checked:bg-primary/5 hover:border-primary/70">
+                                <i class="fa fa-paragraph text-xl mb-2 text-primary"></i>
+                                <span>句子</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 数量选择 -->
+                <div>
+                    <label for="item-count" class="block text-sm font-medium text-gray-700 mb-2">选择学习数量</label>
+                    <div class="relative">
+                        <select id="item-count" class="block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-lg transition-custom">
+                            <option value="5">5 个</option>
+                            <option value="10" selected>10 个</option>
+                            <option value="15">15 个</option>
+                            <option value="20">20 个</option>
+                            <option value="30">30 个</option>
+                            <option value="50">50 个</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <i class="fa fa-chevron-down text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 显示语言选择 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">显示语言（需要翻译的内容）</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="relative">
+                            <input type="radio" id="show-english" name="display-language" value="english" class="peer sr-only" checked>
+                            <label for="show-english" class="block p-4 border-2 rounded-lg cursor-pointer text-center transition-custom peer-checked:border-primary peer-checked:bg-primary/5 hover:border-primary/70">
+                                <i class="fa fa-globe text-xl mb-2 text-primary"></i>
+                                <span>显示英文，输入中文</span>
+                            </label>
+                        </div>
+                        <div class="relative">
+                            <input type="radio" id="show-chinese" name="display-language" value="chinese" class="peer sr-only">
+                            <label for="show-chinese" class="block p-4 border-2 rounded-lg cursor-pointer text-center transition-custom peer-checked:border-primary peer-checked:bg-primary/5 hover:border-primary/70">
+                                <i class="fa fa-language text-xl mb-2 text-primary"></i>
+                                <span>显示中文，输入英文</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 开始按钮 -->
+                <div class="pt-4">
+                    <button id="start-btn" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-custom transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center">
+                        <i class="fa fa-play mr-2"></i>
+                        开始学习
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 学习区域 (默认隐藏) -->
+        <section id="learning-area" class="max-w-2xl mx-auto bg-white rounded-xl p-6 md:p-8 shadow-lg mb-8 hidden transform transition-all duration-500">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-neutral">正在学习</h2>
+                <div class="text-sm text-gray-500" id="progress-indicator">1/10</div>
+            </div>
+            
+            <div class="mb-8 p-6 bg-neutral-light rounded-lg text-center">
+                <p id="current-item" class="text-xl md:text-2xl font-medium"></p>
+            </div>
+            
+            <div class="mb-6">
+                <label for="user-answer" class="block text-sm font-medium text-gray-700 mb-2">请输入翻译</label>
+                <textarea id="user-answer" rows="3" class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border border-gray-300 rounded-lg p-3 transition-custom" placeholder="在这里输入你的答案..."></textarea>
+            </div>
+            
+            <div class="flex space-x-4">
+                <button id="next-btn" class="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-custom transform hover:scale-[1.02] active:scale-[0.98]">
+                    <i class="fa fa-arrow-right mr-2"></i>
+                    下一个
+                </button>
+                <button id="cancel-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-4 rounded-lg transition-custom">
+                    <i class="fa fa-times mr-2"></i>
+                    结束学习
+                </button>
+            </div>
+        </section>
+        
+        <!-- 历史记录区域 -->
+        <section id="history" class="max-w-3xl mx-auto bg-white rounded-xl p-6 md:p-8 shadow-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-neutral">学习历史</h2>
+                <button id="export-btn" class="bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-4 rounded-lg transition-custom flex items-center" disabled>
+                    <i class="fa fa-download mr-2"></i>
+                    导出CSV
+                </button>
+            </div>
+            
+            <div id="history-empty" class="text-center py-12">
+                <i class="fa fa-folder-open-o text-4xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500">暂无学习记录</p>
+            </div>
+            
+            <div id="history-list" class="space-y-4 max-h-96 overflow-y-auto pr-2 hidden">
+                <!-- 历史记录条目将通过JavaScript动态添加 -->
+            </div>
+            
+            <div class="mt-6 flex justify-end">
+                <button id="clear-history-btn" class="text-gray-500 hover:text-red-500 font-medium transition-custom" disabled>
+                    <i class="fa fa-trash mr-1"></i>
+                    清空历史记录
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- 通知提示组件 -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-neutral text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center">
+        <i id="toast-icon" class="fa fa-check-circle mr-2"></i>
+        <span id="toast-message"></span>
+    </div>
+
+    <script>
+        // 全局变量
+        let allItems = [];         // 所有从CSV加载的项目
+        let currentItems = [];     // 当前学习的项目
+        let currentIndex = 0;      // 当前项目索引
+        let historyRecords = [];   // 历史记录
+        let displayLanguage = 'english'; // 默认显示英文
+        
+        // DOM元素
+        const settingsSection = document.getElementById('settings');
+        const learningArea = document.getElementById('learning-area');
+        const historyList = document.getElementById('history-list');
+        const historyEmpty = document.getElementById('history-empty');
+        const progressIndicator = document.getElementById('progress-indicator');
+        const currentItemElement = document.getElementById('current-item');
+        const userAnswerElement = document.getElementById('user-answer');
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        const loadingStatus = document.getElementById('loading-status');
+        const toast = document.getElementById('toast');
+        const toastIcon = document.getElementById('toast-icon');
+        const toastMessage = document.getElementById('toast-message');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 加载历史记录
+            loadHistory();
+            updateHistoryUI();
+            
+            // 从GitHub加载CSV数据 - 注意：这里需要替换为实际的GitHub CSV文件URL
+            // 示例URL，实际使用时请替换
+            const csvUrl = 'https://raw.githubusercontent.com/suitao-coder/English/main/memorize.csv';
+            
+            fetch(csvUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    return response.text();
+                })
+                .then(csvText => {
+                    allItems = parseCSV(csvText);
+                    loadingStatus.innerHTML = `
+                        <i class="fa fa-check-circle text-green-500 text-2xl mb-2"></i>
+                        <p class="text-gray-600">数据加载完成</p>
+                    `;
+                    startBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('加载CSV失败:', error);
+                    loadingStatus.innerHTML = `
+                        <i class="fa fa-exclamation-circle text-red-500 text-2xl mb-2"></i>
+                        <p class="text-gray-600">数据加载失败，请检查网络</p>
+                    `;
+                });
+            
+            // 事件监听
+            startBtn.addEventListener('click', startLearning);
+            nextBtn.addEventListener('click', handleNext);
+            cancelBtn.addEventListener('click', endLearning);
+            exportBtn.addEventListener('click', exportHistory);
+            clearHistoryBtn.addEventListener('click', clearHistory);
+            
+            // 监听显示语言选择变化
+            document.querySelectorAll('input[name="display-language"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    displayLanguage = e.target.value;
+                });
+            });
+        });
+        
+        // 解析CSV文本为对象数组
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const items = [];
+            
+            // 跳过标题行，从第二行开始解析
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                // 处理包含逗号的字段（假设用引号包裹）
+                const regex = /(".*?"|[^",]+)(?=\s*,|\s*$)/g;
+                const matches = line.match(regex);
+                
+                if (matches && matches.length >= 3) {
+                    // 去除引号并修剪空格
+                    const english = matches[0].replace(/"/g, '').trim();
+                    const chinese = matches[1].replace(/"/g, '').trim();
+                    const category = matches[2].replace(/"/g, '').trim();
+                    
+                    items.push({
+                        english,
+                        chinese,
+                        category
+                    });
+                }
+            }
+            
+            return items;
+        }
+        
+        // 开始学习
+        function startLearning() {
+            // 获取用户选择
+            const selectedType = document.querySelector('input[name="content-type"]:checked').value;
+            const itemCount = parseInt(document.getElementById('item-count').value);
+            
+            // 过滤选择的类型
+            const filteredItems = allItems.filter(item => item.category === selectedType);
+            
+            if (filteredItems.length === 0) {
+                showToast('错误', `没有找到${selectedType}类型的数据`, 'error');
+                return;
+            }
+            
+            // 随机选择指定数量的项目
+            currentItems = shuffleArray(filteredItems).slice(0, Math.min(itemCount, filteredItems.length));
+            currentIndex = 0;
+            
+            // 显示学习区域，隐藏设置区域
+            settingsSection.classList.add('hidden');
+            learningArea.classList.remove('hidden');
+            
+            // 显示第一个项目
+            showCurrentItem();
+            
+            // 滚动到学习区域
+            learningArea.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 显示当前项目
+        function showCurrentItem() {
+            if (currentIndex >= currentItems.length) {
+                endLearning();
+                showToast('完成', '恭喜，你已完成所有学习项目！', 'success');
+                return;
+            }
+            
+            // 更新进度指示器
+            progressIndicator.textContent = `${currentIndex + 1}/${currentItems.length}`;
+            
+            // 获取当前项目
+            const item = currentItems[currentIndex];
+            
+            // 根据选择显示英文或中文
+            if (displayLanguage === 'english') {
+                currentItemElement.textContent = item.english;
+            } else {
+                currentItemElement.textContent = item.chinese;
+            }
+            
+            // 清空输入框并聚焦
+            userAnswerElement.value = '';
+            userAnswerElement.focus();
+        }
+        
+        // 处理下一个项目
+        function handleNext() {
+            const userAnswer = userAnswerElement.value.trim();
+            if (!userAnswer) {
+                showToast('提示', '请输入答案后再继续', 'info');
+                userAnswerElement.focus();
+                return;
+            }
+            
+            // 获取当前项目
+            const item = currentItems[currentIndex];
+            
+            // 记录答案
+            let question, correctAnswer;
+            if (displayLanguage === 'english') {
+                question = item.english;
+                correctAnswer = item.chinese;
+            } else {
+                question = item.chinese;
+                correctAnswer = item.english;
+            }
+            
+            // 添加到历史记录
+            historyRecords.push({
+                question,
+                userAnswer,
+                correctAnswer,
+                timestamp: new Date().toISOString()
+            });
+            
+            // 保存历史记录
+            saveHistory();
+            updateHistoryUI();
+            
+            // 移动到下一个项目
+            currentIndex++;
+            showCurrentItem();
+        }
+        
+        // 结束学习
+        function endLearning() {
+            learningArea.classList.add('hidden');
+            settingsSection.classList.remove('hidden');
+            
+            // 滚动到设置区域
+            settingsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 加载历史记录
+        function loadHistory() {
+            const saved = localStorage.getItem('languageLearnerHistory');
+            if (saved) {
+                historyRecords = JSON.parse(saved);
+            }
+        }
+        
+        // 保存历史记录
+        function saveHistory() {
+            localStorage.setItem('languageLearnerHistory', JSON.stringify(historyRecords));
+        }
+        
+        // 更新历史记录UI
+        function updateHistoryUI() {
+            if (historyRecords.length === 0) {
+                historyList.classList.add('hidden');
+                historyEmpty.classList.remove('hidden');
+                exportBtn.disabled = true;
+                clearHistoryBtn.disabled = true;
+                return;
+            }
+            
+            historyEmpty.classList.add('hidden');
+            historyList.classList.remove('hidden');
+            exportBtn.disabled = false;
+            clearHistoryBtn.disabled = false;
+            
+            // 清空列表
+            historyList.innerHTML = '';
+            
+            // 倒序显示，最新的在前面
+            const reversedRecords = [...historyRecords].reverse();
+            
+            // 添加记录
+            reversedRecords.forEach((record, index) => {
+                const date = new Date(record.timestamp);
+                const formattedDate = date.toLocaleString();
+                
+                const recordElement = document.createElement('div');
+                recordElement.className = 'p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-custom';
+                recordElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-sm text-gray-500">${formattedDate}</span>
+                        <span class="text-xs px-2 py-1 bg-gray-100 rounded-full">${index + 1}</span>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div>
+                            <span class="font-medium text-gray-700">题目:</span>
+                            <span class="ml-1">${record.question}</span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-700">你的答案:</span>
+                            <span class="ml-1">${record.userAnswer}</span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-700">正确答案:</span>
+                            <span class="ml-1 text-primary">${record.correctAnswer}</span>
+                        </div>
+                    </div>
+                `;
+                
+                historyList.appendChild(recordElement);
+            });
+        }
+        
+        // 导出历史记录为CSV
+        function exportHistory() {
+            if (historyRecords.length === 0) return;
+            
+            // 构建CSV内容
+            let csvContent = "题面,用户的答案,正确答案\n";
+            
+            historyRecords.forEach(record => {
+                // 处理包含逗号和引号的内容
+                const question = escapeCSVField(record.question);
+                const userAnswer = escapeCSVField(record.userAnswer);
+                const correctAnswer = escapeCSVField(record.correctAnswer);
+                
+                csvContent += `${question},${userAnswer},${correctAnswer}\n`;
+            });
+            
+            // 创建Blob并下载
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            const date = new Date().toISOString().slice(0, 10);
+            a.setAttribute('download', `学习记录_${date}.csv`);
+            a.style.visibility = 'hidden';
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast('成功', '历史记录已导出为CSV文件', 'success');
+        }
+        
+        // 清空历史记录
+        function clearHistory() {
+            if (confirm('确定要清空所有历史记录吗？此操作不可恢复。')) {
+                historyRecords = [];
+                saveHistory();
+                updateHistoryUI();
+                showToast('提示', '历史记录已清空', 'info');
+            }
+        }
+        
+        // 辅助函数：处理CSV字段中的特殊字符
+        function escapeCSVField(field) {
+            if (!field) return '';
+            // 如果包含逗号、引号或换行符，则用引号包裹
+            if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+                // 替换引号为两个引号
+                return `"${field.replace(/"/g, '""')}"`;
+            }
+            return field;
+        }
+        
+        // 辅助函数：随机打乱数组
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        // 显示提示消息
+        function showToast(title, message, type = 'info') {
+            // 设置图标和颜色
+            switch (type) {
+                case 'success':
+                    toastIcon.className = 'fa fa-check-circle mr-2 text-green-400';
+                    toast.classList.add('bg-green-800');
+                    toast.classList.remove('bg-blue-800', 'bg-red-800');
+                    break;
+                case 'error':
+                    toastIcon.className = 'fa fa-exclamation-circle mr-2 text-red-400';
+                    toast.classList.add('bg-red-800');
+                    toast.classList.remove('bg-blue-800', 'bg-green-800');
+                    break;
+                default:
+                    toastIcon.className = 'fa fa-info-circle mr-2 text-blue-400';
+                    toast.classList.add('bg-blue-800');
+                    toast.classList.remove('bg-green-800', 'bg-red-800');
+            }
+            
+            // 设置消息
+            toastMessage.innerHTML = `<strong>${title}:</strong> ${message}`;
+            
+            // 显示提示
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            // 3秒后隐藏
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
