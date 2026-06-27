@@ -68,33 +68,17 @@
                 英语<span class="text-primary">固定搭配</span>归类游戏
             </h1>
             <p class="text-gray-600 text-sm sm:text-base mb-4 max-w-2xl mx-auto">
-                点击下方的介词，然后点击上方对应的动词框，完成固定搭配匹配挑战
+                点击下方短语，然后填写对应的中文翻译，完成固定搭配练习
             </p>
             
             <!-- 游戏设置区域 -->
             <div class="mb-5 bg-white rounded-lg shadow-md p-3 max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-                <!-- 动词数量选择器 -->
+                <!-- 短语数量输入框 -->
                 <div>
-                    <label for="prepositionCount" class="block text-gray-700 text-sm font-medium mb-1.5">动词数量:</label>
+                    <label for="prepositionCount" class="block text-gray-700 text-sm font-medium mb-1.5">短语数量:</label>
                     <div class="flex items-center">
-                        <select id="prepositionCount" class="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                            <option value="3">3个动词</option>
-                            <option value="4">4个动词</option>
-                            <option value="5" selected>5个动词</option>
-                            <option value="6">6个动词</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- 难度选择器 -->
-                <div>
-                    <label for="difficulty" class="block text-gray-700 text-sm font-medium mb-1.5">选择难度:</label>
-                    <div class="flex items-center">
-                        <select id="difficulty" class="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                            <option value="easy">简单（基础搭配）</option>
-                            <option value="medium" selected>中等（核心搭配）</option>
-                            <option value="hard">困难（易混搭配）</option>
-                        </select>
+                        <input type="number" id="prepositionCount" min="3" max="14" value="5"
+                               class="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                     </div>
                 </div>
                 
@@ -157,17 +141,17 @@
         <div class="flex flex-col gap-6 mb-6">
             <!-- 上方：动词区域 -->
             <div id="verbsContainer" class="opacity-50 pointer-events-none transition-opacity duration-500">
-                <h2 class="text-sm sm:text-base font-semibold text-primary mb-3 text-center">动词（点击放置介词）</h2>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    <!-- 动词将通过JavaScript动态生成 -->
+                <h2 class="text-sm sm:text-base font-semibold text-primary mb-3 text-center">任务说明</h2>
+                <div class="grid grid-cols-1 gap-3">
+                    <!-- 任务说明将通过JavaScript动态生成 -->
                 </div>
             </div>
             
-            <!-- 下方：介词区域 -->
+            <!-- 下方：短语区域 -->
             <div id="prepositionsContainer" class="opacity-50 pointer-events-none transition-opacity duration-500">
-                <h2 class="text-sm sm:text-base font-semibold text-secondary mb-3 text-center">介词（点击选择）</h2>
+                <h2 class="text-sm sm:text-base font-semibold text-secondary mb-3 text-center">短语（点击选择）</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    <!-- 介词将通过JavaScript动态生成 -->
+                    <!-- 短语将通过JavaScript动态生成 -->
                 </div>
             </div>
         </div>
@@ -279,129 +263,255 @@
     </div>
     <script>
         // 固定搭配数据（包含动词、可搭配的介词及正确翻译）
-        const collocationData = {
-            easy: [
-                { 
-                    verb: 'look', 
-                    correctPrepositions: [
-                        {prep: 'at', translation: '看'},
-                        {prep: 'for', translation: '寻找'}
-                    ]
-                },
-                { 
-                    verb: 'smile', 
-                    correctPrepositions: [
-                        {prep: 'at', translation: '对...微笑'}
-                    ]
-                },
-                { 
-                    verb: 'shout', 
-                    correctPrepositions: [
-                        {prep: 'at', translation: '对...大喊'}
-                    ]
-                },
-                { 
-                    verb: 'believe', 
-                    correctPrepositions: [
-                        {prep: 'in', translation: '相信'}
-                    ]
-                },
-                { 
-                    verb: 'depend', 
-                    correctPrepositions: [
-                        {prep: 'on', translation: '依靠'}
-                    ]
-                }
-            ],
-            medium: [
-                { 
-                    verb: 'look', 
-                    correctPrepositions: [
-                        {prep: 'at', translation: '看'},
-                        {prep: 'for', translation: '寻找'},
-                        {prep: 'after', translation: '照顾'}
-                    ]
-                },
-                { 
-                    verb: 'suffer', 
-                    correctPrepositions: [
-                        {prep: 'from', translation: '遭受'}
-                    ]
-                },
-                { 
-                    verb: 'wait', 
-                    correctPrepositions: [
-                        {prep: 'for', translation: '等待'}
-                    ]
-                },
-                { 
-                    verb: 'agree', 
-                    correctPrepositions: [
-                        {prep: 'with', translation: '同意某人'},
-                        {prep: 'to', translation: '同意某事'}
-                    ]
-                },
-                { 
-                    verb: 'insist', 
-                    correctPrepositions: [
-                        {prep: 'on', translation: '坚持'}
-                    ]
-                },
-                { 
-                    verb: 'apologize', 
-                    correctPrepositions: [
-                        {prep: 'for', translation: '为...道歉'}
-                    ]
-                }
-            ],
-            hard: [
-                { 
-                    verb: 'glance', 
-                    correctPrepositions: [
-                        {prep: 'at', translation: '瞥一眼'}
-                    ]
-                },
-                { 
-                    verb: 'stare', 
-                    correctPrepositions: [
-                        {prep: 'at', translation: '盯着看'}
-                    ]
-                },
-                { 
-                    verb: 'arrive', 
-                    correctPrepositions: [
-                        {prep: 'at', translation: '到达小地方'},
-                        {prep: 'in', translation: '到达大地方'}
-                    ]
-                },
-                { 
-                    verb: 'persist', 
-                    correctPrepositions: [
-                        {prep: 'in', translation: '坚持做某事'}
-                    ]
-                },
-                { 
-                    verb: 'comment', 
-                    correctPrepositions: [
-                        {prep: 'on', translation: '评论'}
-                    ]
-                },
-                { 
-                    verb: 'derive', 
-                    correctPrepositions: [
-                        {prep: 'from', translation: '源自'}
-                    ]
-                }
-            ]
-        };
+        const collocationData = [
+            { phrase: 'put up', translation: ['搭起','张贴','提出','建造'] },
+            { phrase: 'put out', translation: ['熄灭','扑灭'] },
+            { phrase: 'put on', translation: ['穿上','戴上','上演','增加体重'] },
+            { phrase: 'put down', translation: ['写下','放下'] },
+            { phrase: 'put off', translation: ['推迟'] },
+            { phrase: 'put away', translation: ['将……收起','把……放回原处'] },
+            { phrase: 'look around', translation: ['环视','环顾','游览','参观'] },
+            { phrase: 'look at', translation: ['看','检查'] },
+            { phrase: 'look back', translation: ['回顾','回忆','回首'] },
+            { phrase: 'look down on', translation: ['瞧不起','轻视'] },
+            { phrase: 'look into', translation: ['调查'] },
+            { phrase: 'look through', translation: ['快速查看','浏览'] },
+            { phrase: 'look up to', translation: ['钦佩','尊敬','仰慕'] },
+            { phrase: 'look for', translation: ['寻找'] },
+            { phrase: 'look out', translation: ['留神','当心'] },
+            { phrase: 'look over', translation: ['查看','检查'] },
+            { phrase: 'look up', translation: ['抬头往上看','查阅'] },
+            { phrase: 'look after', translation: ['照顾','照料'] },
+            { phrase: 'look like', translation: ['看起来像'] },
+            { phrase: 'look forward to', translation: ['期待'] },
+            { phrase: 'get away from', translation: ['摆脱','逃离'] },
+            { phrase: 'get on/along with sb.', translation: ['与……和睦相处'] },
+            { phrase: 'get into trouble', translation: ['陷入困境'] },
+            { phrase: 'get out of', translation: ['离开','从……出来',"摆脱"] },
+            { phrase: 'get over', translation: ['解决','克服'] },
+            { phrase: 'get through', translation: ['顺利通过','接通'] },
+            { phrase: 'get together(with sb.)', translation: ['聚会','开会'] },
+            { phrase: 'get on', translation: ['上车','进展'] },
+            { phrase: 'get off', translation: ['下车','离开','下班'] },
+            { phrase: 'get to', translation: ['到达'] },
+            { phrase: 'get up', translation: ['起床','站起'] },
+            { phrase: 'get back', translation: ['返回','找回'] },
+            { phrase: 'give back', translation: ['归还','送回'] },
+            { phrase: 'give in', translation: ['认输','投降','屈服','让步'] },
+            { phrase: 'give out', translation: ['用完','耗尽','分发','发出'] },
+            { phrase: 'give up', translation: ['放弃'] },
+            { phrase: 'give away', translation: ['赠送','捐赠'] },
+            { phrase: 'give off', translation: ['发出','放出'] },
+            { phrase: 'break through', translation: ['冲破','突破','克服'] },
+            { phrase: 'break down', translation: ['出故障','垮掉'] },
+            { phrase: 'break up', translation: ['拆开','解散','粉碎'] },
+            { phrase: 'break into', translation: ['强行闯入','突然开始'] },
+            { phrase: 'break off', translation: ['断开','中断'] },
+            { phrase: 'break out', translation: ['爆发'] },
+            { phrase: 'bring about', translation: ['导致','引起'] },
+            { phrase: 'bring down', translation: ['打垮','降低'] },
+            { phrase: 'bring out', translation: ['使显现','使表现出','出版'] },
+            { phrase: 'bring up', translation: ['养育'] },
+            { phrase: 'call for', translation: ['需要','需求'] },
+            { phrase: 'call off', translation: ['取消'] },
+            { phrase: 'call on/upon sb.', translation: ['正式邀请……'] },
+            { phrase: 'call up', translation: ['征召','打电话','使想起'] },
+            { phrase: 'cut back', translation: ['削减','修剪'] },
+            { phrase: 'cut in', translation: ['打断','插嘴'] },
+            { phrase: 'cut off', translation: ['切掉','砍掉','中断'] },
+            { phrase: 'cut down', translation: ['砍倒'] },
+            { phrase: 'cut out', translation: ['删除','突然熄火','剪下'] },
+            { phrase: 'cut up', translation: ['切碎'] },
+            { phrase: 'take after', translation: ['像'] },
+            { phrase: 'take on', translation: ['呈现'] },
+            { phrase: 'take up', translation: ['占据','占用','学着做','开始从事'] },
+            { phrase: 'take out', translation: ['拿出','取出'] },
+            { phrase: 'take down', translation: ['拆掉','写下'] },
+            { phrase: 'take place', translation: ['发生'] },
+            { phrase: 'take a walk', translation: ['散步'] },
+            { phrase: 'take a rest', translation: ['休息'] },
+            { phrase: 'take it easy', translation: ['别紧张','放松'] },
+            { phrase: 'take off', translation: ['脱下','摘掉','起飞'] },
+            { phrase: 'take part in', translation: ['参加'] },
+            { phrase: 'take photos', translation: ['拍照'] },
+            { phrase: 'take in', translation: ['理解','领会'] },
+            { phrase: 'take over', translation: ['接管'] },
+            { phrase: 'turn on', translation: ['打开'] },
+            { phrase: 'turn off', translation: ['关掉'] },
+            { phrase: 'turn in', translation: ['上交','提交'] },
+            { phrase: 'turn...into...', translation: ['使……变成……'] },
+            { phrase: 'turn to', translation: ['向……求助','翻到'] },
+            { phrase: 'turn up', translation: ['调高','到达','来到','露面'] },
+            { phrase: 'turn down', translation: ['把……调低','拒绝'] },
+            { phrase: 'turn out', translation: ['结果是','证明是'] },
+            { phrase: 'come about', translation: ['发生'] },
+            { phrase: 'come across', translation: ['偶然遇见'] },
+            { phrase: 'come along', translation: ['跟着来','进展','出现'] },
+            { phrase: 'come back', translation: ['回来','再度流行','回想起'] },
+            { phrase: 'come from', translation: ['来自','出生于'] },
+            { phrase: 'come in', translation: ['进来','流行'] },
+            { phrase: 'come on', translation: ['快点','加油'] },
+            { phrase: 'come out', translation: ['出版','开花'] },
+            { phrase: 'come true', translation: ['变为现实','成为事实'] },
+            { phrase: 'come up with', translation: ['想出'] },
+            { phrase: 'make up', translation: ['组成','编造','作出补偿'] },
+            { phrase: 'make it', translation: ['获得成功'] },
+            { phrase: 'make friends with', translation: ['和……交朋友'] },
+            { phrase: 'make money', translation: ['赚钱'] },
+            { phrase: 'make the bed', translation: ['整理床铺'] },
+            { phrase: 'make a mistake', translation: ['犯错','出错'] },
+            { phrase: 'make a living', translation: ['谋生'] },
+            { phrase: 'make a decisin', translation: ['做出决定'] },
+            { phrase: 'make progress', translation: ['取得进步'] },
+            { phrase: 'make sure', translation: ['确保','查明'] },
+            { phrase: 'fall off', translation: ['脱落','下降'] },
+            { phrase: 'fall behind', translation: ['落后于'] },
+            { phrase: 'fall down', translation: ['倒塌','跌倒'] },
+            { phrase: 'fall asleep', translation: ['入睡'] },
+            { phrase: 'be famous/known for', translation: ['以……而闻名'] },
+            { phrase: 'be good for', translation: ['对……有好处'] },
+            { phrase: 'be good with', translation: ['善于和……打交道'] },
+            { phrase: 'be good at', translation: ['擅长'] },
+            { phrase: 'be bad for', translation: ['对……有害'] },
+            { phrase: 'be sorry for', translation: ['对……感到抱歉'] },
+            { phrase: 'be thirsty for', translation: ['渴望','渴求'] },
+            { phrase: 'be angry with', translation: ['生……的气'] },
+            { phrase: 'be strict with sb.', translation: ['对……要求严格'] },
+            { phrase: 'be pleased with', translation: ['对……感到高兴','对……感到满意'] },
+            { phrase: 'be popular with', translation: ['受……的欢迎'] },
+            { phrase: 'be busy doing/with sth.', translation: ['忙于……'] },
+            { phrase: 'be full of/filled with', translation: ['充满'] },
+            { phrase: 'be similar to', translation: ['与……相似'] },
+            { phrase: 'be polite to', translation: ['对……有礼貌'] },
+            { phrase: 'be friendly/kind to', translation: ['对……友好'] },
+            { phrase: 'be able to do sth.', translation: ['有能力做某事'] },
+            { phrase: 'be proud of', translation: ['为……自豪'] },
+            { phrase: 'be different from', translation: ['与……不同','与……有区别'] },
+            { phrase: 'be careful with', translation: ['小心对待……'] },
+            { phrase: 'be afraid of', translation: ['害怕'] },
+            { phrase: 'be fond of', translation: ['喜欢','喜爱'] },
+            { phrase: 'be interested in', translation: ['对……感兴趣'] },
+            { phrase: 'be harmful to', translation: ['对……有害'] },
+            { phrase: 'be crazy about', translation: ['热衷于……'] },
+            { phrase: 'at first', translation: ['起先','开始的时候'] },
+            { phrase: 'at last', translation: ['最后','终于'] },
+            { phrase: 'at least', translation: ['至少'] },
+            { phrase: 'at most', translation: ['至多'] },
+            { phrase: 'at noon', translation: ['在中午'] },
+            { phrase: 'at once', translation: ['立刻','马上'] },
+            { phrase: 'at the same time', translation: ['同时'] },
+            { phrase: 'at the moment', translation: ['此刻'] },
+            { phrase: 'at times', translation: ['偶尔','有时'] },
+            { phrase: 'in a hurry', translation: ['匆忙地'] },
+            { phrase: 'in all', translation: ['总共'] },
+            { phrase: 'in danger', translation: ['处于危险之中'] },
+            { phrase: 'in fact', translation: ['事实上','实际上'] },
+            { phrase: 'in front of', translation: ['在……前面'] },
+            { phrase: 'in one’s opinion', translation: ['在某人看来'] },
+            { phrase: 'in order to', translation: ['为了'] },
+            { phrase: 'in other words', translation: ['换句话说'] },
+            { phrase: 'in return', translation: ['作为回报'] },
+            { phrase: 'in surprise', translation: ['惊讶地'] },
+            { phrase: 'in the end', translation: ['最后','终于'] },
+            { phrase: 'in time', translation: ['及时'] },
+            { phrase: 'in a minute', translation: ['马上','立即'] },
+            { phrase: 'in detail', translation: ['详细地'] },
+            { phrase: 'in general', translation: ['大体上','总的来说'] },
+            { phrase: 'in need of', translation: ['需要'] },
+            { phrase: 'in trouble', translation: ['处于困境中'] },
+            { phrase: 'in short/a word', translation: ['总而言之'] },
+            { phrase: 'in total', translation: ['总共'] },
+            { phrase: 'in need', translation: ['贫困的','困难中的'] },
+            { phrase: 'on business', translation: ['出差'] },
+            { phrase: 'on duty', translation: ['值日','值班'] },
+            { phrase: 'on foot', translation: ['步行'] },
+            { phrase: 'on holiday/vacation', translation: ['在度假'] },
+            { phrase: 'on the other hand', translation: ['另一方面'] },
+            { phrase: 'on one’s own', translation: ['独自','单独'] },
+            { phrase: 'on one’s way to...', translation: ['在去……的路上'] },
+            { phrase: 'on purpose', translation: ['故意','有意地'] },
+            { phrase: 'on time', translation: ['装饰','按时'] },
+            { phrase: 'from time to time', translation: ['有时','不时'] },
+            { phrase: 'from now on', translation: ['从今往后','从现在开始'] },
+            { phrase: 'from then on', translation: ['从那时起'] },
+            { phrase: 'from...to...', translation: ['从……到……'] },
+            { phrase: 'by accident/chance', translation: ['偶然'] },
+            { phrase: 'by air', translation: ['乘飞机'] },
+            { phrase: 'by bus', translation: ['乘公共汽车'] },
+            { phrase: 'by train', translation: ['乘火车'] },
+            { phrase: 'by mistake', translation: ['错误地','无意地'] },
+            { phrase: 'by the way', translation: ['顺便说一下'] },
+            { phrase: 'as for', translation: ['至于','关于'] },
+            { phrase: 'as if/though', translation: ['好像','仿佛'] },
+            { phrase: 'as well', translation: ['也'] },
+            { phrase: 'as soon as possible', translation: ['尽快'] },
+            { phrase: 'as a result', translation: ['结果','因此'] },
+            { phrase: 'lead to', translation: ['导致'] },
+            { phrase: 'stick to', translation: ['坚持'] },
+            { phrase: 'pay attention to', translation: ['注意'] },
+            { phrase: 'close to', translation: ['接近'] },
+            { phrase: 'reply to', translation: ['回答'] },
+            { phrase: 'add up to', translation: ['总计为'] },
+            { phrase: 'belong to', translation: ['属于'] },
+            { phrase: 'prefer...to...', translation: ['和……相比更喜欢……'] },
+            { phrase: 'set an example to', translation: ['给……树立榜样'] },
+            { phrase: 'instead of', translation: ['代替'] },
+            { phrase: 'so that', translation: ['以便','为了'] },
+            { phrase: 'such as', translation: ['例如','像……这样'] },
+            { phrase: 'as soon as', translation: ['一……就……'] },
+            { phrase: 'as long as', translation: ['只要'] },
+            { phrase: 'because of', translation: ['因为','由于'] },
+            { phrase: 'even though/if', translation: ['即使'] },
+            { phrase: 'tell sb. to do sth.', translation: ['告诉某人做某事','吩咐某人做某事'] },
+            { phrase: 'ask sb. to do sth.', translation: ['要求某人做某事'] },
+            { phrase: 'invite sb. to do sth.', translation: ['邀请某人做某事'] },
+            { phrase: 'teach sb. to do sth.', translation: ['教某人做某事'] },
+            { phrase: 'expect sb. to do sth.', translation: ['期望某人做某事'] },
+            { phrase: 'advise st. to do sth.', translation: ['建议某人做某事'] },
+            { phrase: 'want to do sth.', translation: ['想要做某事'] },
+            { phrase: 'decide to do sth.', translation: ['决定做某事'] },
+            { phrase: 'refuse to do sth.', translation: ['拒绝做某事'] },
+            { phrase: 'learn to do sth.', translation: ['学习做某事'] },
+            { phrase: 'plan to do sth.', translation: ['计划做某事'] },
+            { phrase: 'promise to do sth.', translation: ['承诺做某事'] },
+            { phrase: 'enjoy doing sth.', translation: ['喜欢做某事'] },
+            { phrase: 'keep doing sth.', translation: ['继续做某事'] },
+            { phrase: 'suggest doing sth.', translation: ['建议做某事'] },
+            { phrase: 'finish doing sth.', translation: ['完成做某事'] },
+            { phrase: 'be/get used to doing sth.', translation: ['习惯做某事'] },
+            { phrase: 'feel like doing sth.', translation: ['想要做某事'] },
+            { phrase: 'spend some time (in) doing sth.', translation: ['花一些时间做某事'] },
+            { phrase: 'practice doing sth.', translation: ['练习做某事'] },
+            { phrase: 'can’t help doing sth.', translation: ['情不自禁做某事'] },
+            { phrase: 'mind doing sth.', translation: ['介意做某事'] },
+            { phrase: 'avoid doing sth.', translation: ['避免做某事'] },
+            { phrase: 'consider doing sth,', translation: ['考虑做某事'] },
+            { phrase: 'succeed in doing sth.', translation: ['成功地做了某事'] },
+            { phrase: 'have fun doing sth.', translation: ['做某事很开心'] },
+            { phrase: 'stop doing sth.', translation: ['停止做某事'] },
+            { phrase: 'stop to do sth.', translation: ['停下来去做另一件事'] },
+            { phrase: 'try doing sth.', translation: ['尝试做某事'] },
+            { phrase: 'try to do sth.', translation: ['设法去做某事','尽力去做某事'] },
+            { phrase: 'forget doing sth.', translation: ['忘记做过某事'] },
+            { phrase: 'forget to do sth.', translation: ['忘记要去做某事'] },
+            { phrase: 'remember doing sth.', translation: ['记得做过某事'] },
+            { phrase: 'remember to do sth.', translation: ['记得要去做某事'] },
+            { phrase: 'regret doing sth.', translation: ['后悔做过某事'] },
+            { phrase: 'regret to do sth.', translation: ['遗憾要去做某事'] },
+            { phrase: 'mean doing sth.', translation: ['意味着做某事'] },
+            { phrase: 'mean to do sth.', translation: ['打算做某事'] },
+            { phrase: 'go on doing sth.', translation: ['继续做某事'] },
+            { phrase: 'sth. need doing', translation: ['某事需要去做'] },
+            { phrase: 'sth. need to be done', translation: ['某事需要去做'] },
+            { phrase: 'need to do sth.', translation: ['有必要做某事','需要做某事'] },
+        ];
 
         // 游戏状态
         const gameState = {
             isPlaying: false,
-            selectedPreposition: null, // 当前选中的介词
+            selectedPhrase: null, // 当前选中的短语
             currentTranslation: {
-                verb: '',
-                preposition: '',
+                phrase: '',
                 correctTranslation: ''
             },
             matchedPairs: 0,
@@ -412,7 +522,7 @@
             countdownSeconds: 0, // 倒计时剩余秒数
             originalCountdown: 0, // 初始倒计时秒数
             timingMode: 'timed', // 计时模式：timed/countdown/untimed
-            difficulty: 'medium', // 难度级别
+            difficulty: 'mixed', // 合并后的词库
             currentVerbs: [], // 当前游戏使用的动词
             allPrepositions: [], // 所有需要匹配的介词
             correctMatches: {}, // 正确的匹配关系：{动词ID: [介词1, 介词2...]}
@@ -477,7 +587,6 @@
         const historyModalContent = document.getElementById('historyModalContent');
         const closeHistoryBtn = document.getElementById('closeHistoryBtn');
         const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-        const difficultySelect = document.getElementById('difficulty');
         const playAgainConfirmModal = document.getElementById('playAgainConfirmModal');
         const playAgainModalContent = document.getElementById('playAgainModalContent');
         const confirmStartBtn = document.getElementById('confirmStartBtn');
@@ -562,8 +671,8 @@
             resetGameState();
             
             // 获取游戏设置
-            const verbCount = parseInt(prepositionCountSelect.value);
-            gameState.difficulty = difficultySelect.value;
+            const phraseCount = parseInt(prepositionCountSelect.value) || 5;
+            gameState.difficulty = 'mixed';
             gameState.timingMode = timingModeSelect.value;
             
             // 设置倒计时（如果需要）
@@ -580,12 +689,13 @@
             }
             
             // 选择随机动词
-            gameState.currentVerbs = getRandomVerbs(verbCount, gameState.difficulty);
+            gameState.currentVerbs = getRandomVerbs(Math.min(Math.max(phraseCount, 3), 14));
+            gameState.totalPairs = gameState.currentVerbs.length;
             
-            // 生成动词
+            // 生成任务说明
             createVerbCategories();
             
-            // 生成介词选项
+            // 生成短语选项
             createPrepositionOptions();
             
             // 更新UI状态
@@ -620,7 +730,7 @@
             gameState.correctMatches = {};
             gameState.usedMatches = {}; // 新增：重置已使用的匹配
             gameState.allPrepositions = [];
-            gameState.selectedPreposition = null;
+            gameState.selectedPhrase = null;
             gameState.prepositionTranslations = {};
             gameState.isReset = false;
             gameState.totalPairs = 0; 
@@ -658,138 +768,22 @@
         }
 
         // 从数据中选择随机动词
-        function getRandomVerbs(count, difficulty) {
-            const verbs = collocationData[difficulty];
-            const shuffled = [...verbs].sort(() => 0.5 - Math.random());
+        function getRandomVerbs(count) {
+            const shuffled = [...collocationData].sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
         }
 
-        // 创建动词分类
+        // 创建任务说明
         function createVerbCategories() {
             verbsContainer.innerHTML = '';
             
-            gameState.currentVerbs.forEach((item, index) => {
-                const verbId = `verb-${index}`;
-                
-                // 记录正确的匹配关系（存储介词）
-                const correctPreps = item.correctPrepositions.map(p => p.prep);
-                gameState.correctMatches[verbId] = correctPreps;
-                gameState.usedMatches[verbId] = []; // 初始化已使用的匹配
-                gameState.totalPairs += correctPreps.length;
-                
-                // 存储翻译信息
-                item.correctPrepositions.forEach(p => {
-                    gameState.prepositionTranslations[`${item.verb}-${p.prep}`] = p.translation;
-                });
-                
-                // 创建动词元素
-                const verb = document.createElement('div');
-                verb.id = verbId;
-                verb.className = 'category-box bg-white rounded-lg shadow-md border-2 border-primary/20 p-3 flex flex-col cursor-pointer hover:border-primary/50 transition-all duration-200';
-                
-                // 动词标题
-                const title = document.createElement('h3');
-                title.className = 'font-semibold text-primary mb-2 text-center';
-                title.textContent = item.verb;
-                verb.appendChild(title);
-                
-                // 介词容器（用于放置点击选择的介词）
-                const prepositionDropZone = document.createElement('div');
-                prepositionDropZone.className = 'flex-1 flex flex-wrap gap-2 justify-center items-center p-1 min-h-[60px]';
-                prepositionDropZone.setAttribute('data-verb', item.verb);
-                prepositionDropZone.setAttribute('data-verb-id', verbId);
-                
-                // 添加点击事件
-                prepositionDropZone.addEventListener('click', handleVerbClick);
-                
-                verb.appendChild(prepositionDropZone);
-                verbsContainer.appendChild(verb);
-            });
-        }
-
-        // 处理动词框点击
-        function handleVerbClick() {
-            if (!gameState.isPlaying || !gameState.selectedPreposition) return;
-            
-            const verbId = this.getAttribute('data-verb-id');
-            const verb = this.getAttribute('data-verb');
-            const prepositionItem = gameState.selectedPreposition;
-            
-            // 如果已经被放置过，不再处理
-            if (!prepositionItem || prepositionItem.parentNode !== prepositionsContainer) {
-                gameState.selectedPreposition = null;
-                return;
-            }
-            
-            // 获取当前动词和介词
-            const prepositionValue = prepositionItem.dataset.preposition;
-            
-            // 检查该动词是否已经匹配过这个介词
-            if (gameState.usedMatches[verbId].includes(prepositionValue)) {
-                // 显示提示信息
-                showTemporaryMessage(this, "该动词已匹配过这个介词");
-                // 取消选择状态
-                gameState.selectedPreposition.classList.remove('selected');
-                gameState.selectedPreposition = null;
-                return;
-            }
-            
-            // 增加尝试次数
-            gameState.attempts++;
-            attemptsDisplay.textContent = gameState.attempts;
-            
-            // 检查是否匹配正确
-            const isCorrect = gameState.correctMatches[verbId]?.includes(prepositionValue) || false;
-            
-            // 克隆元素并添加到动词中
-            const clonedItem = prepositionItem.cloneNode(true);
-            clonedItem.classList.remove('cursor-pointer', 'hover:shadow-lg', 'selected');
-            clonedItem.classList.add('cursor-default');
-            
-            // 移除事件监听
-            clonedItem.removeEventListener('click', handlePrepositionClick);
-            
-            // 根据是否正确设置样式
-            if (isCorrect) {
-                clonedItem.classList.remove('bg-secondary/10', 'border-secondary/30', 'text-secondary');
-                clonedItem.classList.add('bg-green-100', 'border-green-300', 'text-green-700', 'matched');
-                
-                // 隐藏原始元素
-                prepositionItem.style.display = 'none';
-                
-                // 记录已使用的匹配
-                gameState.usedMatches[verbId].push(prepositionValue);
-                
-                // 取消选择状态
-                gameState.selectedPreposition = null;
-                
-                // 保存当前需要翻译的动词和介词
-                gameState.currentTranslation = {
-                    verb: verb,
-                    preposition: prepositionValue,
-                    correctTranslation: gameState.prepositionTranslations[`${verb}-${prepositionValue}`]
-                };
-                
-                // 显示翻译输入弹窗
-                showTranslationInputModal();
-            } else {
-                clonedItem.classList.remove('bg-secondary/10', 'border-secondary/30', 'text-secondary');
-                clonedItem.classList.add('bg-red-100', 'border-red-300', 'text-red-700');
-                
-                // 3秒后移除错误的放置
-                setTimeout(() => {
-                    if (clonedItem.parentNode) {
-                        clonedItem.parentNode.removeChild(clonedItem);
-                    }
-                }, 1500);
-                
-                // 取消选择状态
-                gameState.selectedPreposition = null;
-                prepositionItem.classList.remove('selected');
-            }
-            
-            // 将克隆的元素添加到动词中
-            this.appendChild(clonedItem);
+            const introCard = document.createElement('div');
+            introCard.className = 'bg-white rounded-lg shadow-md border border-primary/20 p-4 text-center';
+            introCard.innerHTML = `
+                <h3 class="font-semibold text-primary mb-1">请选择下方短语</h3>
+                <p class="text-sm text-gray-600">点击短语后，输入对应中文翻译即可完成练习</p>
+            `;
+            verbsContainer.appendChild(introCard);
         }
 
         // 显示临时提示信息
@@ -826,67 +820,57 @@
             }, 2000);
         }
 
-        // 创建介词选项 - 确保同一个介词对应不同动词时显示对应数量的介词
+        // 创建短语选项
         function createPrepositionOptions() {
             prepositionsContainer.innerHTML = '';
             
-            // 收集所有需要的介词（包含重复项，确保每个匹配都有对应的介词）
-            const allPrepositions = [];
+            const shuffledPhrases = [...gameState.currentVerbs].sort(() => 0.5 - Math.random());
+            gameState.allPrepositions = shuffledPhrases.map(item => item.phrase);
             
-            gameState.currentVerbs.forEach(item => {
-                item.correctPrepositions.forEach(prep => {
-                    allPrepositions.push(prep.prep);
-                });
-            });
-            
-            // 打乱顺序
-            const shuffledPrepositions = allPrepositions.sort(() => 0.5 - Math.random());
-            
-            // 保存所有介词
-            gameState.allPrepositions = shuffledPrepositions;
-            
-            // 创建介词元素
-            shuffledPrepositions.forEach(prep => {
-                const preposition = document.createElement('div');
-                preposition.className = 'bg-white rounded-lg shadow-md bg-secondary/10 border-2 border-secondary/30 text-secondary p-2 text-center cursor-pointer hover:shadow-lg transition-all duration-200';
-                preposition.textContent = prep;
-                preposition.dataset.preposition = prep;
+            shuffledPhrases.forEach((item, index) => {
+                const phraseCard = document.createElement('button');
+                phraseCard.className = 'bg-white rounded-lg shadow-md bg-secondary/10 border-2 border-secondary/30 text-secondary p-2 text-center cursor-pointer hover:shadow-lg transition-all duration-200';
+                phraseCard.textContent = item.phrase;
+                phraseCard.dataset.phrase = item.phrase;
+                phraseCard.dataset.phraseId = `phrase-${index}`;
+                phraseCard.dataset.translation = JSON.stringify(item.translation);
                 
-                // 添加点击事件
-                preposition.addEventListener('click', handlePrepositionClick);
+                phraseCard.addEventListener('click', handlePrepositionClick);
                 
-                prepositionsContainer.appendChild(preposition);
+                prepositionsContainer.appendChild(phraseCard);
             });
         }
 
-        // 处理介词点击
+        // 处理短语点击
         function handlePrepositionClick() {
             if (!gameState.isPlaying) return;
             
-            // 如果点击的是已选中的介词，则取消选择
-            if (gameState.selectedPreposition === this) {
-                this.classList.remove('selected');
-                gameState.selectedPreposition = null;
+            const phraseId = this.dataset.phraseId;
+            if (gameState.usedMatches[phraseId]) {
+                showTemporaryMessage(this, '该短语已完成');
                 return;
             }
             
-            // 取消之前选中的介词
-            if (gameState.selectedPreposition) {
-                gameState.selectedPreposition.classList.remove('selected');
-            }
+            // 增加尝试次数
+            gameState.attempts++;
+            attemptsDisplay.textContent = gameState.attempts;
             
-            // 选中当前介词
-            this.classList.add('selected');
-            gameState.selectedPreposition = this;
+            gameState.selectedPhrase = this;
+            gameState.currentTranslation = {
+                phrase: this.dataset.phrase,
+                correctTranslation: JSON.parse(this.dataset.translation)
+            };
+            
+            showTranslationInputModal();
         }
 
         // 检查翻译是否正确
         function checkTranslation() {
             const userTranslation = translationInput.value.trim();
-            const correctTranslation = gameState.currentTranslation.correctTranslation;
+            const correctTranslations = gameState.currentTranslation.correctTranslation || [];
             
             // 简单的模糊匹配（考虑同义词和常见翻译）
-            const isCorrect = isTranslationMatch(userTranslation, correctTranslation);
+            const isCorrect = isTranslationMatch(userTranslation, correctTranslations);
             
             // 显示反馈
             translationFeedback.classList.remove('hidden', 'text-green-600', 'text-red-600');
@@ -898,6 +882,13 @@
                 // 增加匹配计数
                 gameState.matchedPairs++;
                 updateMatchesDisplay();
+                
+                if (gameState.selectedPhrase) {
+                    gameState.selectedPhrase.classList.remove('bg-secondary/10', 'border-secondary/30', 'text-secondary');
+                    gameState.selectedPhrase.classList.add('bg-green-100', 'border-green-300', 'text-green-700', 'matched');
+                    gameState.selectedPhrase.disabled = true;
+                    gameState.usedMatches[gameState.selectedPhrase.dataset.phraseId] = true;
+                }
                 
                 // 延迟关闭弹窗
                 setTimeout(() => {
@@ -917,32 +908,32 @@
         }
 
         // 翻译匹配逻辑（基于同义词库）
-        function isTranslationMatch(userInput, correctTranslation) {
-            if (!userInput || !correctTranslation) return false;
+        function isTranslationMatch(userInput, correctTranslations) {
+            if (!userInput || !correctTranslations || correctTranslations.length === 0) return false;
             
-            // 转为小写进行比较
             const userLower = userInput.toLowerCase();
-            const correctLower = correctTranslation.toLowerCase();
             
-            // 完全匹配
-            if (userLower === correctLower) return true;
-            
-            // 检查是否在同义词列表中
-            if (translationSynonyms[correctTranslation]) {
-                // 检查用户输入是否是正确翻译的同义词之一
-                return translationSynonyms[correctTranslation].some(synonym => 
-                    userLower.includes(synonym.toLowerCase()) || 
-                    synonym.toLowerCase().includes(userLower)
-                );
-            }
-            
-            // 对于复杂翻译（如"同意某人"），检查是否包含核心词
-            const coreWords = correctLower.split(/[^\u4e00-\u9fa5]/).filter(word => word);
-            if (coreWords.length > 0) {
-                return coreWords.every(word => userLower.includes(word));
-            }
-            
-            return false;
+            return correctTranslations.some(correctTranslation => {
+                if (!correctTranslation) return false;
+                
+                const correctLower = correctTranslation.toLowerCase();
+                
+                if (userLower === correctLower) return true;
+                
+                if (translationSynonyms[correctTranslation]) {
+                    return translationSynonyms[correctTranslation].some(synonym => 
+                        userLower.includes(synonym.toLowerCase()) || 
+                        synonym.toLowerCase().includes(userLower)
+                    );
+                }
+                
+                const coreWords = correctLower.split(/[^\u4e00-\u9fa5]/).filter(word => word);
+                if (coreWords.length > 0) {
+                    return coreWords.every(word => userLower.includes(word));
+                }
+                
+                return false;
+            });
         }
 
         // 显示翻译输入弹窗
@@ -951,8 +942,8 @@
             // 重置输入和反馈
             translationInput.value = '';
             translationFeedback.classList.add('hidden');
-            // 设置要翻译的短语（只显示动词和介词）
-            phraseToTranslate.textContent = `请输入 "${gameState.currentTranslation.verb} + ${gameState.currentTranslation.preposition}" 的中文翻译`;
+            // 设置要翻译的短语
+            phraseToTranslate.textContent = `请输入 "${gameState.currentTranslation.phrase}" 的中文翻译`;
             
             // 触发动画
             setTimeout(() => {
@@ -1150,7 +1141,8 @@
                     const difficultyLabels = {
                         'easy': '简单',
                         'medium': '中等',
-                        'hard': '困难'
+                        'hard': '困难',
+                        'mixed': '混合'
                     };
                     
                     historyItem.innerHTML = `
@@ -1210,7 +1202,8 @@
             const difficultyLabels = {
                 'easy': '简单',
                 'medium': '中等',
-                'hard': '困难'
+                'hard': '困难',
+                'mixed': '混合'
             };
             
             // 构建CSV内容
